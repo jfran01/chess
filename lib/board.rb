@@ -3,6 +3,7 @@ require_relative 'pieces'
 class Board
   Y_AXIS = %w[a b c d e f g h].freeze
   X_AXIS = (1..8).freeze
+  SQUARE_SIZE = 5
 
   attr_reader :board
 
@@ -11,6 +12,11 @@ class Board
   end
 
   def render_board
+    render_rows
+    puts "   #{Array.new(8, '-' * SQUARE_SIZE).join('')}"
+    row = ''
+    ('a'..'h').each { |letter| row += letter.center(SQUARE_SIZE) }
+    puts "    #{row}"
   end
 
   private
@@ -58,7 +64,22 @@ class Board
     end
     board
   end
+
+  def render_rows
+    8.downto(1) do |rank|
+      row = "#{rank} | "
+      ('a'..'h').map do |file|
+        piece = @board[(file + rank.to_s).to_sym]
+        row += if piece.nil?
+                 ' . '.center(SQUARE_SIZE)
+               else
+                 piece.icon.center(SQUARE_SIZE)
+               end
+      end
+      puts row
+    end
+  end
 end
 
 board = Board.new
-puts board.board
+board.render_board

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'pieces'
 
 class Board
@@ -37,29 +39,29 @@ class Board
     board.each_key do |coord|
       case coord
       when /\w2/
-        board[coord] = Pawn.new(:white, icon)
+        board[coord] = Pawn.new(:white, icon, coord)
       when :a1, :h1
-        board[coord] = Rook.new(:white, icon)
+        board[coord] = Rook.new(:white, icon, coord)
       when :b1, :g1
-        board[coord] = Knight.new(:white, icon)
+        board[coord] = Knight.new(:white, icon, coord)
       when :c1, :f1
-        board[coord] = Bishop.new(:white, icon)
+        board[coord] = Bishop.new(:white, icon, coord)
       when :d1
-        board[coord] = Queen.new(:white, icon)
+        board[coord] = Queen.new(:white, icon, coord)
       when :e1
-        board[coord] = King.new(:white, icon)
+        board[coord] = King.new(:white, icon, coord)
       when /\w7/
-        board[coord] = Pawn.new(:black, icon)
+        board[coord] = Pawn.new(:black, icon, coord)
       when :a8, :h8
-        board[coord] = Rook.new(:black, icon)
+        board[coord] = Rook.new(:black, icon, coord)
       when :b8, :g8
-        board[coord] = Knight.new(:black, icon)
+        board[coord] = Knight.new(:black, icon, coord)
       when :c8, :f8
-        board[coord] = Bishop.new(:black, icon)
+        board[coord] = Bishop.new(:black, icon, coord)
       when :d8
-        board[coord] = Queen.new(:black, icon)
+        board[coord] = Queen.new(:black, icon, coord)
       when :e8
-        board[coord] = King.new(:black, icon)
+        board[coord] = King.new(:black, icon, coord)
       end
     end
     board
@@ -80,6 +82,3 @@ class Board
     end
   end
 end
-
-board = Board.new
-board.render_board

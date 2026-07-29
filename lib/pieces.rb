@@ -1,15 +1,18 @@
 class Piece
-  ICONS = { pawn: { white: '♙', black: '♟' },
-            knight: { white: '♘', black: '♞' },
-            bishop: { white: '♗', black: '♝' },
-            rook: { white: '♗', black: '♝' },
-            queen: { white: '♕', black: '♛' },
-            king: { white: '♔', black: '♚' } }.freeze
+  ALPHABET_CONVERTER = ('a'..'z').each.with_index(1).to_h
 
   attr_reader :player
 
-  def initialize(player, icon)
+  def initialize(player, icon, coordinates)
     @player = player
+    @coordinates = convert_coords(coordinates)
+  end
+
+  def convert_coords(coordinates)
+    coordinates = coordinates.to_s.split('')
+    coordinates[0] = Piece::ALPHABET_CONVERTER[coordinates[0]]
+    coordinates[1] = coordinates[1].to_i
+    coordinates
   end
 end
 
@@ -19,7 +22,7 @@ class Pawn < Piece
 
   attr_reader :icon
 
-  def initialize(player, icon)
+  def initialize(player, icon, coordinates)
     @icon = ICONS[icon][player]
     super
   end
@@ -43,9 +46,16 @@ class Knight < Piece
 
   attr_reader :icon
 
-  def initialize(player, icon)
+  def initialize(player, icon, coordinates)
     @icon = ICONS[icon][player]
     super
+  end
+
+  def find_adj
+    offsets = [[2, 1], [-2, 1], [2, -1], [-2, -1], [1, 2], [-1, 2], [1, -2], [-1, -2]]
+    adj_coordinates = offsets.map { |dx, dy| [@coordinates[0] + dx, @coordinates[1] + dy] }
+    adj_coordinates.select! { |x, y| x < 8 && !x.negative? && y < 8 && !y.negative? }
+    adj_coordinates
   end
 end
 

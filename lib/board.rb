@@ -48,7 +48,20 @@ class Board
 
   def pop_board(icon)
     board = init_board
-    board.keys.filter_map { |coord| board[coord] = Pawn.new(:white, :classic, coord) if coord[1] == 2 }
+    board = pop_board_helper(board, :white, icon, 1, 2)
+    pop_board_helper(board, :black, icon, 8, 7)
+  end
+
+  def pop_board_helper(board, player, icon, y_first, y_second)
+    board.keys.filter_map { |coord| board[coord] = Pawn.new(player, icon) if coord[1] == y_second }
+    board[[1, y_first]] = Rook.new(player, icon)
+    board[[2, y_first]] = Knight.new(player, icon)
+    board[[3, y_first]] = Bishop.new(player, icon)
+    board[[4, y_first]] = Queen.new(player, icon)
+    board[[5, y_first]] = King.new(player, icon)
+    board[[6, y_first]] = Bishop.new(player, icon)
+    board[[7, y_first]] = Knight.new(player, icon)
+    board[[8, y_first]] = Rook.new(player, icon)
     board
   end
 

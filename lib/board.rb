@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative 'pieces'
+require_relative 'player'
 
 class Board
   Y_AXIS = %w[a b c d e f g h].freeze
@@ -19,6 +20,13 @@ class Board
     row = ''
     ('a'..'h').each { |letter| row += letter.center(SQUARE_SIZE) }
     puts "    #{row}"
+  end
+
+  def move_piece(curr_player)
+    from_coord = curr_player.move_from.to_sym
+    piece = @board[from_coord]
+    to_coord = curr_player.move_to.to_sym
+    piece.legal_move?(to_coord)
   end
 
   private
@@ -82,3 +90,6 @@ class Board
     end
   end
 end
+
+player = Player.new(1, :white)
+p Board.new.move_piece(player)

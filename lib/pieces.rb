@@ -3,7 +3,7 @@ class Piece
 
   attr_reader :player
 
-  def initialize(player, icon, coordinates)
+  def initialize(player, _icon, coordinates)
     @player = player
     @coordinates = convert_coords(coordinates)
   end
@@ -13,6 +13,13 @@ class Piece
     coordinates[0] = Piece::ALPHABET_CONVERTER[coordinates[0]]
     coordinates[1] = coordinates[1].to_i
     coordinates
+  end
+
+  def legal_move?(square_to)
+    square_to = convert_coords(square_to)
+    return true if @adj_coordinates.include?(square_to)
+
+    false
   end
 end
 
@@ -24,6 +31,7 @@ class Pawn < Piece
 
   def initialize(player, icon, coordinates)
     @icon = ICONS[icon][player]
+    @moved = false
     super
   end
 end
@@ -34,7 +42,7 @@ class Rook < Piece
 
   attr_reader :icon
 
-  def initialize(player, icon)
+  def initialize(player, icon, coordinates)
     @icon = ICONS[icon][player]
     super
   end
@@ -49,13 +57,13 @@ class Knight < Piece
   def initialize(player, icon, coordinates)
     @icon = ICONS[icon][player]
     super
+    find_adj
   end
 
   def find_adj
     offsets = [[2, 1], [-2, 1], [2, -1], [-2, -1], [1, 2], [-1, 2], [1, -2], [-1, -2]]
-    adj_coordinates = offsets.map { |dx, dy| [@coordinates[0] + dx, @coordinates[1] + dy] }
-    adj_coordinates.select! { |x, y| x < 8 && !x.negative? && y < 8 && !y.negative? }
-    adj_coordinates
+    @adj_coordinates = offsets.map { |dx, dy| [@coordinates[0] + dx, @coordinates[1] + dy] }
+    @adj_coordinates.select! { |x, y| x < 8 && !x.negative? && y < 8 && !y.negative? }
   end
 end
 
@@ -65,7 +73,7 @@ class Bishop < Piece
 
   attr_reader :icon
 
-  def initialize(player, icon)
+  def initialize(player, icon, coordinates)
     @icon = ICONS[icon][player]
     super
   end
@@ -77,7 +85,7 @@ class Queen < Piece
 
   attr_reader :icon
 
-  def initialize(player, icon)
+  def initialize(player, icon, coordinates)
     @icon = ICONS[icon][player]
     super
   end
@@ -89,7 +97,7 @@ class King < Piece
 
   attr_reader :icon
 
-  def initialize(player, icon)
+  def initialize(player, icon, coordinates)
     @icon = ICONS[icon][player]
     super
   end

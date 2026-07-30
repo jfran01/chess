@@ -3,16 +3,8 @@ class Piece
 
   attr_reader :player
 
-  def initialize(player, _icon, coordinates)
+  def initialize(player, _icon)
     @player = player
-    @coordinates = convert_coords(coordinates)
-  end
-
-  def convert_coords(coordinates)
-    coordinates = coordinates.to_s.split('')
-    coordinates[0] = Piece::ALPHABET_CONVERTER[coordinates[0]]
-    coordinates[1] = coordinates[1].to_i
-    coordinates
   end
 
   def legal_move?(square_to)
@@ -29,9 +21,8 @@ class Pawn < Piece
 
   attr_reader :icon
 
-  def initialize(player, icon, coordinates)
+  def initialize(player, icon)
     @icon = ICONS[icon][player]
-    @moved = false
     super
   end
 end
@@ -42,7 +33,7 @@ class Rook < Piece
 
   attr_reader :icon
 
-  def initialize(player, icon, coordinates)
+  def initialize(player, icon)
     @icon = ICONS[icon][player]
     super
   end
@@ -54,10 +45,10 @@ class Knight < Piece
 
   attr_reader :icon
 
-  def initialize(player, icon, coordinates)
+  def initialize(player, icon)
     @icon = ICONS[icon][player]
     super
-    find_adj
+    # find_adj
   end
 
   def find_adj
@@ -73,7 +64,7 @@ class Bishop < Piece
 
   attr_reader :icon
 
-  def initialize(player, icon, coordinates)
+  def initialize(player, icon)
     @icon = ICONS[icon][player]
     super
   end
@@ -85,7 +76,7 @@ class Queen < Piece
 
   attr_reader :icon
 
-  def initialize(player, icon, coordinates)
+  def initialize(player, icon)
     @icon = ICONS[icon][player]
     super
   end
@@ -97,7 +88,7 @@ class King < Piece
 
   attr_reader :icon
 
-  def initialize(player, icon, coordinates)
+  def initialize(player, icon)
     @icon = ICONS[icon][player]
     super
   end

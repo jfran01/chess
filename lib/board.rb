@@ -38,8 +38,9 @@ class Board
   def init_board
     board = {}
     8.downto(1) do |y|
-      8.downto(1) do |x|
+      1.upto(8) do |x|
         coord = [x, y]
+        p coord
         board[coord] = nil
       end
     end

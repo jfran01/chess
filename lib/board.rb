@@ -19,7 +19,7 @@ class Board
     puts "   #{Array.new(8, '-' * SQUARE_SIZE).join('')}"
     row = ''
     ('a'..'h').each { |letter| row += letter.center(SQUARE_SIZE) }
-    puts "    #{row}"
+    puts "   #{row}"
   end
 
   def move_piece(curr_player)
@@ -40,7 +40,6 @@ class Board
     8.downto(1) do |y|
       1.upto(8) do |x|
         coord = [x, y]
-        p coord
         board[coord] = nil
       end
     end
@@ -67,20 +66,18 @@ class Board
   end
 
   def render_rows
-    8.downto(1) do |rank|
-      row = "#{rank} | "
-      ('a'..'h').map do |file|
-        piece = @board[(file + rank.to_s).to_sym]
-        row += if piece.nil?
-                 ' . '.center(SQUARE_SIZE)
-               else
-                 piece.icon.center(SQUARE_SIZE)
-               end
+    icons = @board.values.map do |value|
+      if value.nil?
+        '.'.center(SQUARE_SIZE)
+      else
+        value.icon.center(SQUARE_SIZE)
       end
-      puts row
     end
+    rows = []
+    icons.each_slice(8) { |slice| rows << slice.join }
+    rows.each_with_index { |row, idx| puts "#{(idx + 1).to_s.ljust(2.5)}|#{row}" }
   end
 end
 
-player = Player.new(1, :white)
-p Board.new.board
+Player.new(1, :white)
+Board.new.render_board

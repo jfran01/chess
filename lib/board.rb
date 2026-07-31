@@ -6,11 +6,14 @@ require_relative 'player'
 class Board
   SQUARE_SIZE = 5
 
-  attr_reader :board, :knight_attacks
+  attr_reader :board, :knight_attacks, :king_attacks, :white_pawn_attacks, :black_pawn_attacks
 
   def initialize
     @board = pop_board(:classic)
     @knight_attacks = init_attack_maps([[2, 1], [-2, 1], [2, -1], [-2, -1], [1, 2], [-1, 2], [1, -2], [-1, -2]])
+    @king_attacks = init_attack_maps([[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]])
+    @white_pawn_attacks = init_attack_maps([[-1, 1], [1, 1]])
+    @black_pawn_attacks = init_attack_maps([[-1, -1], [1, -1]])
   end
 
   def render_board

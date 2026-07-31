@@ -6,10 +6,11 @@ require_relative 'player'
 class Board
   SQUARE_SIZE = 5
 
-  attr_reader :board
+  attr_reader :board, :knight_attacks
 
   def initialize
     @board = pop_board(:classic)
+    @knight_attacks = init_attack_maps([[2, 1], [-2, 1], [2, -1], [-2, -1], [1, 2], [-1, 2], [1, -2], [-1, -2]])
   end
 
   def render_board
@@ -76,12 +77,12 @@ class Board
     map = {}
     board.each_key do |coord|
       adj = offsets.map { |dx, dy| [coord[0] + dx, coord[1] + dy] }
-      adj.select! { |x, y| x <= 8 && !x.negative? && y <= 8 && !y.negative? }
+      adj.select! { |x, y| x.between?(1, 8) && y.between?(1, 8) }
       map[coord] = adj
     end
     map
   end
 end
 
-Player.new(1, :white)
-p Board.new.init_attack_maps([[1, 0], [1, 1], [-1, -1]])
+# Player.new(1, :white)
+# p Board.new.knight_attacks

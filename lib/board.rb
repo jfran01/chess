@@ -4,8 +4,6 @@ require_relative 'pieces'
 require_relative 'player'
 
 class Board
-  Y_AXIS = %w[a b c d e f g h].freeze
-  X_AXIS = (1..8).freeze
   SQUARE_SIZE = 5
 
   attr_reader :board
@@ -27,10 +25,6 @@ class Board
     piece = @board[from_coord]
     to_coord = curr_player.move_to.to_sym
     piece.legal_move?(to_coord)
-  end
-
-  def read_board
-    init_board
   end
 
   private
@@ -77,7 +71,17 @@ class Board
     icons.each_slice(8) { |slice| rows << slice.join }
     rows.each_with_index { |row, idx| puts "#{(idx + 1).to_s.ljust(2.5)}|#{row}" }
   end
+
+  def init_attack_maps(offsets)
+    map = {}
+    board.each_key do |coord|
+      adj = offsets.map { |dx, dy| [coord[0] + dx, coord[1] + dy] }
+      adj.select! { |x, y| x <= 8 && !x.negative? && y <= 8 && !y.negative? }
+      map[coord] = adj
+    end
+    map
+  end
 end
 
 Player.new(1, :white)
-Board.new.render_board
+p Board.new.init_attack_maps([[1, 0], [1, 1], [-1, -1]])

@@ -18,6 +18,25 @@ module CheckMoves
 
     true
   end
+
+  def check_attack_maps(piece, from, to)
+    if piece.instance_of?(Knight)
+      return true if knight_attacks[from].include?(to)
+    elsif piece.instance_of?(King)
+      return true if king_attacks[from].include?(to)
+    elsif piece.instance_of?(Pawn)
+      return true unless board[to]
+
+      if piece.player == :white
+        return true if white_pawn_attacks[from].include?(to)
+      elsif piece.player == :black
+        return true if white_pawn_attacks[from].include?(to)
+      end
+    elsif piece.instance_of?(Queen) || piece.instance_of?(Bishop) || piece.instance_of?(Rook)
+      true
+    end
+    false
+  end
 end
 
 module AttackMaps

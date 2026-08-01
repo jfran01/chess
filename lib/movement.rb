@@ -1,6 +1,10 @@
 module CheckMoves
   def legal_move?(piece, from, to)
     p legal_slide?(piece, from, to)
+    p check_attack_maps(piece, from, to)
+  end
+
+  def legal_move_to?
   end
 
   def legal_slide?(piece, from, to)

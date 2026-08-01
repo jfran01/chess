@@ -44,10 +44,12 @@ class Game
 
   def move_piece
     from_coord = @curr_player.move_from
-    unless from_coord.all? { |num| num.between?(1, 8) }
-      puts 'Those coordinates are not in range, please enter a valid letter + number combination'
-    end
     piece = @board.board[from_coord]
+    until @curr_player.colour == piece.player
+      puts 'You cannot move from a square that does not contain a piece of your colour; use your own army, imperialist.'
+      from_coord = @curr_player.move_from
+      piece = @board.board[from_coord]
+    end
     to_coord = @curr_player.move_to
     @board.legal_move?(piece, from_coord, to_coord)
   end

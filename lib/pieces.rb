@@ -94,8 +94,3 @@ class King < Piece
     super
   end
 end
-
-bishop = Bishop.new(:white, :classic)
-rook = Rook.new(:white, :classic)
-p bishop.slide_diagonal([1, 1], [4, 4])
-p rook.slide_straight([2, 6], [2, 1])

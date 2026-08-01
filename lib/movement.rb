@@ -1,13 +1,44 @@
+module CheckMoves
+  def legal_move?(piece, from, to)
+    # return unless piece.instance_of?(Rook)
+
+    through_coords = piece.slide_straight(from, to)
+    p legal_slide?(through_coords)
+  end
+
+  def legal_slide?(through_coords)
+    through_coords.each { |coord| return false if board[coord] }
+  end
+end
+
+module AttackMaps
+  def init_attack_maps(offsets)
+    map = {}
+    board.each_key do |coord|
+      adj = offsets.map { |dx, dy| [coord[0] + dx, coord[1] + dy] }
+      adj.select! { |x, y| x.between?(1, 8) && y.between?(1, 8) }
+      map[coord] = adj
+    end
+    map
+  end
+end
+
 module Slideable
   def slide_straight(from, to)
     move = to.zip(from).map { |a, b| a - b }
-    through_coords = []
     return false unless move.include?(0)
 
+    through_coords = []
     if !move[0].zero?
-      1.upto(move[0] - 1) { |i| through_coords << [from[0] + i, from[1]] }
+      direction = move[0] <=> 0
+      (move[0].abs - 1).times do |i|
+        through_coords << [from[0] + (direction * (i + 1)), from[1]]
+      end
     elsif !move[1].zero?
-      1.upto(move[1] - 1) { |i| through_coords << [from[0], from[1] + i] }
+      direction = move[1] <=> 0
+      (move[1].abs - 1).times do |i|
+        through_coords << [from[0], from[1] + (direction * (i + 1))]
+      end
     else
       return false
     end
@@ -16,5 +47,15 @@ module Slideable
   end
 
   def slide_diagonal(from, to)
+    move = to.zip(from).map { |a, b| a - b }
+    return false if move.include?(0) || move[0].abs != move[1].abs
+
+    through_coords = []
+    dx = move[0] <=> 0
+    dy = move[1] <=> 0
+    (move[0].abs - 1).times do |i|
+      through_coords << [from[0] + (dx * (i + 1)), from[1] + (dy * (i + 1))]
+    end
+    through_coords
   end
 end

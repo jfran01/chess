@@ -2,8 +2,11 @@
 
 require_relative 'pieces'
 require_relative 'player'
+require_relative 'movement'
 
 class Board
+  include CheckMoves
+  include AttackMaps
   SQUARE_SIZE = 5
 
   attr_reader :board, :knight_attacks, :king_attacks, :white_pawn_attacks, :black_pawn_attacks
@@ -22,13 +25,6 @@ class Board
     row = ''
     ('a'..'h').each { |letter| row += letter.center(SQUARE_SIZE) }
     puts "   #{row}"
-  end
-
-  def move_piece(curr_player)
-    from_coord = curr_player.move_from.to_sym
-    piece = @board[from_coord]
-    to_coord = curr_player.move_to.to_sym
-    piece.legal_move?(to_coord)
   end
 
   private
@@ -75,17 +71,12 @@ class Board
     icons.each_slice(8) { |slice| rows << slice.join }
     rows.each_with_index { |row, idx| puts "#{(idx + 1).to_s.ljust(2.5)}|#{row}" }
   end
-
-  def init_attack_maps(offsets)
-    map = {}
-    board.each_key do |coord|
-      adj = offsets.map { |dx, dy| [coord[0] + dx, coord[1] + dy] }
-      adj.select! { |x, y| x.between?(1, 8) && y.between?(1, 8) }
-      map[coord] = adj
-    end
-    map
-  end
 end
 
-# Player.new(1, :white)
-# p Board.new.knight_attacks
+board = Board.new
+knight = Knight.new(:white, :classic)
+king = King.new(:white, :classic)
+wpawn = Pawn.new(:white, :classic)
+bpawn = Pawn.new(:black, :classic)
+
+p board.legal_pawn_move?(bpawn.player, [1, 7], [1, 6])

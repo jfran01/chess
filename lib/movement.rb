@@ -1,10 +1,17 @@
 module CheckMoves
   def legal_move?(piece, from, to)
-    p legal_slide?(piece, from, to)
-    p check_attack_maps(piece, from, to)
+    return false unless legal_move_to?(piece, to)
+    return false unless legal_slide?(piece, from, to)
+    return false unless check_attack_maps(piece, from, to)
+    return false if piece.instance_of?(Pawn) && !legal_pawn_move?(piece.colour, from, to)
+
+    true
   end
 
-  def legal_move_to?
+  def legal_move_to?(piece, to)
+    return true unless board[to]
+
+    piece.player != board[to].player
   end
 
   def legal_slide?(piece, from, to)
@@ -38,6 +45,18 @@ module CheckMoves
       end
     elsif piece.instance_of?(Queen) || piece.instance_of?(Bishop) || piece.instance_of?(Rook)
       true
+    end
+    false
+  end
+
+  def legal_pawn_move?(colour, from, to)
+    return true if board[to]
+
+    offset = to.zip(from).map { |a, b| a - b }
+    if colour == :white
+      return true if offset == [0, 1]
+    elsif colour == :black
+      return true if offset == [0, -1]
     end
     false
   end

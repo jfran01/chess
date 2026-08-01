@@ -1,13 +1,22 @@
 module CheckMoves
   def legal_move?(piece, from, to)
-    # return unless piece.instance_of?(Rook)
-
-    through_coords = piece.slide_straight(from, to)
-    p legal_slide?(through_coords)
+    p legal_slide?(piece, from, to)
   end
 
-  def legal_slide?(through_coords)
-    through_coords.each { |coord| return false if board[coord] }
+  def legal_slide?(piece, from, to)
+    if piece.instance_of?(Rook)
+      through_coords = piece.slide_straight(from, to)
+    elsif piece.instance_of?(Bishop)
+      through_coords = piece.slide_diagonal(from, to)
+    elsif piece.instance_of?(Queen)
+      through_coords = piece.slide_straight(from, to)
+      through_coords << piece.slide_diagonal(from, to)
+    else
+      return true
+    end
+    return false if through_coords.any? { |coord| board[coord] }
+
+    true
   end
 end
 

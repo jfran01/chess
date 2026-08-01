@@ -1,25 +1,34 @@
+# frozen_string_literal: true
+
 require_relative 'player'
 require_relative 'board'
 require_relative 'pieces'
 
 class Game
-  DIVIDER = '-------------------------------'.freeze
-  RESET = "\e[0m".freeze
-  BOLD = "\e[1m".freeze
-  UNDERLINE = "\e[4m".freeze
+  DIVIDER = '--------------------------------------------'
+  RESET = "\e[0m"
+  BOLD = "\e[1m"
+  UNDERLINE = "\e[4m"
 
   def initialize
+    introduce
     @board = Board.new
     @player1 = Player.new(1, :white)
     @player2 = Player.new(2, :black)
     @curr_player = @player1
-    introduce
+    puts DIVIDER
+    @board.render_board
+    puts DIVIDER
+  end
+
+  def play_round
+    move_piece
   end
 
   private
 
   def introduce
-    puts "Welcome\n"
+    puts "Welcome to chess: the classic game of strategy, prediction, and emotional overinvestment.\n"
     describe_moves
   end
 
@@ -32,6 +41,17 @@ class Game
       puts "No worries then chess master. Let's get on with it..."
     end
   end
+
+  def move_piece
+    from_coord = @curr_player.move_from
+    unless from_coord.all? { |num| num.between?(1, 8) }
+      puts 'Those coordinates are not in range, please enter a valid letter + number combination'
+    end
+    piece = @board.board[from_coord]
+    to_coord = @curr_player.move_to
+    @board.legal_move?(piece, from_coord, to_coord)
+  end
+
   RULES = <<~RULES
 
     #{DIVIDER}
@@ -68,4 +88,4 @@ class Game
   RULES
 end
 
-Game.new
+Game.new.play_round

@@ -1,3 +1,5 @@
+require_relative 'movement'
+
 class Piece
   ALPHABET_CONVERTER = ('a'..'z').each.with_index(1).to_h
 
@@ -28,6 +30,8 @@ class Pawn < Piece
 end
 
 class Rook < Piece
+  include Slideable
+
   ICONS = { classic: { white: '♖', black: '♜' },
             letters: { white: 'WR', black: 'BR' } }.freeze
 
@@ -93,3 +97,6 @@ class King < Piece
     super
   end
 end
+
+p Rook.new(:white, :classic).slide_straight([3, 7], [6, 5])
+p Rook.new(:white, :classic).slide_straight([1, 1], [1, 1])

@@ -11,7 +11,7 @@ class Piece
 end
 
 class Pawn < Piece
-  ICONS = { classic: { white: '♙', black: '♟' },
+  ICONS = { classic: { white: '♟', black: '♙' },
             letters: { white: 'WP', black: 'BP' } }.freeze
 
   attr_reader :icon
@@ -25,7 +25,7 @@ end
 class Rook < Piece
   include Slideable
 
-  ICONS = { classic: { white: '♖', black: '♜' },
+  ICONS = { classic: { white: '♜', black: '♖' },
             letters: { white: 'WR', black: 'BR' } }.freeze
 
   attr_reader :icon
@@ -37,7 +37,7 @@ class Rook < Piece
 end
 
 class Knight < Piece
-  ICONS = { classic: { white: '♘', black: '♞' },
+  ICONS = { classic: { white: '♞', black: '♘' },
             letters: { white: 'WN', black: 'BN' } }.freeze
 
   attr_reader :icon
@@ -58,7 +58,7 @@ end
 class Bishop < Piece
   include Slideable
 
-  ICONS = { classic: { white: '♗', black: '♝' },
+  ICONS = { classic: { white: '♝', black: '♗' },
             letters: { white: 'WB', black: 'BB' } }.freeze
 
   attr_reader :icon
@@ -72,7 +72,7 @@ end
 class Queen < Piece
   include Slideable
 
-  ICONS = { classic: { white: '♕', black: '♛' },
+  ICONS = { classic: { white: '♛', black: '♕' },
             letters: { white: 'WQ', black: 'BQ' } }.freeze
 
   attr_reader :icon
@@ -84,7 +84,7 @@ class Queen < Piece
 end
 
 class King < Piece
-  ICONS = { classic: { white: '♔', black: '♚' },
+  ICONS = { classic: { white: '♚', black: '♔' },
             letters: { white: 'WK', black: 'BK' } }.freeze
 
   attr_reader :icon

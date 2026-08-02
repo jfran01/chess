@@ -69,14 +69,6 @@ class Board
     end
     rows = []
     icons.each_slice(8) { |slice| rows << slice.join }
-    rows.each_with_index { |row, idx| puts "#{(idx + 1).to_s.ljust(2.5)}|#{row}" }
+    rows.each_with_index { |row, idx| puts "#{(8 - idx).to_s.ljust(2.5)}|#{row}" }
   end
 end
-
-board = Board.new
-knight = Knight.new(:white, :classic)
-king = King.new(:white, :classic)
-wpawn = Pawn.new(:white, :classic)
-bpawn = Pawn.new(:black, :classic)
-
-p board.legal_pawn_move?(bpawn.player, [1, 7], [1, 6])

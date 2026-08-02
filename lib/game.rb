@@ -16,6 +16,7 @@ class Game
     @player1 = Player.new(1, :white)
     @player2 = Player.new(2, :black)
     @curr_player = @player1
+    @captured = []
     puts DIVIDER
     @board.render_board
     puts DIVIDER
@@ -43,15 +44,30 @@ class Game
   end
 
   def move_piece
+    moving_piece, from_coord, to_coord = next_move
+    captured_piece = @board.board[to_coord]
+    @board.board[to_coord] = moving_piece
+    @board.board[from_coord] = nil
+    @board.render_board
+    return unless captured_piece
+
+    puts "Congratulations! (and commiserations...) #{captured_piece.player} #{captured_piece.class} has been captured."
+    @captured << captured_piece
+  end
+
+  def next_move
     from_coord = @curr_player.move_from
     piece = @board.board[from_coord]
-    until @curr_player.colour == piece.player
+    until !piece.nil? && @curr_player.colour == piece.player
       puts 'You cannot move from a square that does not contain a piece of your colour; use your own army, imperialist.'
       from_coord = @curr_player.move_from
       piece = @board.board[from_coord]
     end
     to_coord = @curr_player.move_to
-    @board.legal_move?(piece, from_coord, to_coord)
+    return [piece, from_coord, to_coord] if @board.legal_move?(piece, from_coord, to_coord)
+
+    puts "#{piece.class} cannot move to that square. Do better."
+    next_move
   end
 
   RULES = <<~RULES

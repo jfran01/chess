@@ -1,5 +1,5 @@
 class Player
-  attr_reader :colour
+  attr_reader :colour, :id
 
   def initialize(id, colour)
     @id = id
@@ -8,7 +8,6 @@ class Player
   end
 
   def move_from
-    puts "\n\e[4m#{@id}'s turn\e[0m"
     puts 'Enter the square you would like to move from:'
     from_coord = convert_coord(gets.chomp)
     return from_coord if from_coord.all? { |num| num.between?(1, 8) }

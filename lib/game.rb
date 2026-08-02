@@ -15,15 +15,24 @@ class Game
     @board = Board.new
     @player1 = Player.new(1, :white)
     @player2 = Player.new(2, :black)
-    @curr_player = @player1
+    @players = [@player1, @player2]
+    @curr_player = @players[0]
     @captured = []
     puts DIVIDER
     @board.render_board
     puts DIVIDER
   end
 
+  def play_game
+    play_round
+    play_round
+    play_round
+  end
+
   def play_round
+    puts "\n\e[4m#{@curr_player.id}'s turn\e[0m"
     move_piece
+    @curr_player = @players.reverse![0]
   end
 
   private
@@ -106,4 +115,4 @@ class Game
   RULES
 end
 
-Game.new.play_round
+Game.new.play_game

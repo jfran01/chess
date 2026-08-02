@@ -3,10 +3,12 @@
 require_relative 'pieces'
 require_relative 'player'
 require_relative 'movement'
+require_relative 'check'
 
 class Board
   include CheckMoves
   include AttackMaps
+  include Check
   SQUARE_SIZE = 5
 
   attr_reader :board, :knight_attacks, :king_attacks, :white_pawn_attacks, :black_pawn_attacks
@@ -72,3 +74,6 @@ class Board
     rows.each_with_index { |row, idx| puts "#{(8 - idx).to_s.ljust(2.5)}|#{row}" }
   end
 end
+
+board = Board.new
+p board.check(:white)

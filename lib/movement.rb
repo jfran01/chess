@@ -55,8 +55,10 @@ module CheckMoves
     offset = to.zip(from).map { |a, b| a - b }
     if colour == :white
       return true if offset == [0, 1]
+      return true if from[1] == 2 && offset == [0, 2]
     elsif colour == :black
       return true if offset == [0, -1]
+      return true if from[1] == 7 && offset == [0, -2]
     end
     false
   end

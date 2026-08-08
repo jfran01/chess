@@ -82,4 +82,4 @@ board.board[[5, 3]] = board.board[[8, 8]]
 board.board[[8, 8]] = nil
 board.render_board
 wking = board.find_king(:white)
-board.check?(wking[0], wking[1], :white)
+p board.escape_check?(wking[0], :white)

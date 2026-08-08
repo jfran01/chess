@@ -14,7 +14,8 @@ class Board
   attr_reader :board, :knight_attacks, :king_attacks, :white_pawn_attacks, :black_pawn_attacks
 
   def initialize
-    @board = pop_board(:classic)
+    @board = init_board
+    pop_board(:classic)
     @knight_attacks = init_attack_maps([[2, 1], [-2, 1], [2, -1], [-2, -1], [1, 2], [-1, 2], [1, -2], [-1, -2]])
     @king_attacks = init_attack_maps([[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]])
     @white_pawn_attacks = init_attack_maps([[-1, 1], [1, 1]])
@@ -43,9 +44,8 @@ class Board
   end
 
   def pop_board(icon)
-    board = init_board
-    board = pop_board_helper(board, :white, icon, 1, 2)
-    pop_board_helper(board, :black, icon, 8, 7)
+    @board = pop_board_helper(@board, :white, icon, 1, 2)
+    @board = pop_board_helper(@board, :black, icon, 8, 7)
   end
 
   def pop_board_helper(board, player, icon, y_first, y_second)
@@ -76,4 +76,10 @@ class Board
 end
 
 board = Board.new
-p board.check(:white)
+board.board[[5, 4]] = board.board[[5, 2]]
+board.board[[5, 2]] = nil
+board.board[[5, 3]] = board.board[[8, 8]]
+board.board[[8, 8]] = nil
+board.render_board
+wking = board.find_king(:white)
+board.check?(wking[0], wking[1], :white)

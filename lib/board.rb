@@ -82,4 +82,5 @@ board.board[[5, 2]] = nil
 board.board[[5, 3]] = board.board[[8, 8]]
 board.board[[8, 8]] = nil
 board.render_board
-p board.check?([5, 1], :white)
+board.checking_pieces = board.check?([5, 1], :white)
+p board.block_check?([5, 1], :black)

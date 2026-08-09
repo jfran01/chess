@@ -2,7 +2,6 @@ module Check
   def check?(king_coord, colour)
     checking_pieces = []
     checking_pieces << knight_attacks[king_coord].select { |coord| enemy?(coord, colour, Knight) }
-    checking_pieces << king_attacks[king_coord].select { |coord| enemy?(coord, colour, King) }
     checking_pieces << straight_attack?(king_coord, colour)
     checking_pieces << diagonal_attack?(king_coord, colour)
     checking_pieces << pawn_attack?(king_coord, colour)
@@ -19,24 +18,25 @@ module Check
     end
   end
 
-  def block_check?(king_coord)
+  def block_check?(king_coord, colour)
     return unless @checking_pieces.size == 1
-    return if king_attacks[king_coord].include?(@checking_pieces[0])
 
     checking_piece = board[@checking_pieces[0]]
     if checking_piece.instance_of?(Rook || Queen)
       through_coords = checking_piece.slide_straight(@checking_pieces[0], king_coord)
-      p through_coords
     elsif checking_piece.instance_of?(Bishop || Queen)
-      through_coords = checking_piece.slide_straight(@checking_pieces[0], king_coord)
+      through_coords = checking_piece.slide_diagonal(@checking_pieces[0], king_coord)
+    end
+    through_coords.each do |coord|
+      return true if check?(coord, colour)
     end
   end
+
+  private
 
   def find_king(colour)
     board.find { |_coord, piece| piece.instance_of?(King) && piece.player == colour }
   end
-
-  private
 
   def enemy?(coord, colour, piece)
     enemy_coord = board[coord]

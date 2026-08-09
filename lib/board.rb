@@ -12,6 +12,7 @@ class Board
   SQUARE_SIZE = 5
 
   attr_reader :board, :knight_attacks, :king_attacks, :white_pawn_attacks, :black_pawn_attacks
+  attr_accessor :checking_pieces # remove this line after testing
 
   def initialize
     @board = init_board
@@ -81,5 +82,4 @@ board.board[[5, 2]] = nil
 board.board[[5, 3]] = board.board[[8, 8]]
 board.board[[8, 8]] = nil
 board.render_board
-wking = board.find_king(:white)
-p board.escape_check?(wking[0], :white)
+p board.check?([5, 1], :white)

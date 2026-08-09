@@ -1,10 +1,10 @@
 module Check
-  def check?(king_coord, piece, colour)
+  def check?(king_coord, colour)
     checking_pieces = []
     checking_pieces << knight_attacks[king_coord].select { |coord| enemy?(coord, colour, Knight) }
     checking_pieces << king_attacks[king_coord].select { |coord| enemy?(coord, colour, King) }
     checking_pieces << straight_attack?(king_coord, colour)
-    checking_pieces << diagonal_attack?(king_coord, piece)
+    checking_pieces << diagonal_attack?(king_coord, colour)
     checking_pieces << pawn_attack?(king_coord, colour)
     checking_pieces.reject!(&:empty?)
     return checking_pieces unless checking_pieces.empty?
@@ -36,6 +36,15 @@ module Check
     board.find { |_coord, piece| piece.instance_of?(King) && piece.player == colour }
   end
 
+  private
+
+  def enemy?(coord, colour, piece)
+    enemy_coord = board[coord]
+    return true if enemy_coord && enemy_coord.player != colour && enemy_coord.instance_of?(piece)
+
+    false
+  end
+
   def sliding_pieces(colour)
     pieces = []
     board.each do |coord, piece|
@@ -46,51 +55,18 @@ module Check
     pieces
   end
 
-  def sliding_attack?(king_coord, colour)
-    sliding_pieces(colour).each do |coord, piece|
-      p piece
-      slide_through = piece.slide_straight(coord, king_coord) if piece.instance_of?(Rook) || piece.instance_of?(Queen)
-      slide_through = piece.slide_diagonal(coord, king_coord) if piece.instance_of?(Bishop)
-      slide_through += piece.slide_diagonal(coord, king_coord) if piece.instance_of?(Queen)
-      return coord if slide_through && slide_through.none? { |through| board[through] }
-    end
-  end
-
-  private
-
-  def enemy?(coord, colour, piece)
-    enemy_coord = board[coord]
-    return true if enemy_coord && enemy_coord.player != colour && enemy_coord.instance_of?(piece)
-
-    false
-  end
-
   def straight_attack?(king_coord, colour)
-    straight_coords = []
-    board.each do |coord, piece|
-      # populate straight_coords with coords of enemy Rook and Queen pieces
-      if !piece.nil? && piece.player != colour && (piece.is_a?(Rook) || piece.is_a?(Queen))
-        straight_coords << [coord, piece]
-      end
-    end
-    p "straight coords: #{straight_coords}"
-    straight_coords.each do |coord, piece|
-      slide_through = piece.slide_straight(coord, king_coord)
-      return coord if slide_through && slide_through.none? { |through| board[through] } # rubocop: disable Style/SafeNavigation
+    sliding_pieces(colour).each do |coord, piece|
+      slide_through = piece.slide_straight(coord, king_coord) if piece.instance_of?(Rook) || piece.instance_of?(Queen)
+      return coord if slide_through && slide_through.none? { |through| board[through] }
     end
     []
   end
 
   def diagonal_attack?(king_coord, colour)
-    diagonal_coords = []
-    board.each do |coord, piece|
-      if !piece.nil? && piece.player != colour && (piece.is_a?(Bishop) || piece.is_a?(Queen))
-        diagonal_coords << [coord, piece]
-      end
-    end
-    diagonal_coords.each do |coord, piece|
-      slide_through = piece.slide_diagonal(king_coord, coord)
-      return coord if slide_through && slide_through.none? { |through| board[through] } # rubocop: disable Style/SafeNavigation
+    sliding_pieces(colour).each do |coord, piece|
+      slide_through = piece.slide_diagonal(coord, king_coord) if piece.instance_of?(Bishop) || piece.instance_of?(Queen)
+      return coord if slide_through && slide_through.none? { |through| board[through] }
     end
     []
   end

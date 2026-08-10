@@ -78,9 +78,10 @@ end
 
 board = Board.new
 board.board[[5, 4]] = board.board[[5, 2]]
-board.board[[5, 2]] = nil
-board.board[[5, 3]] = board.board[[8, 8]]
+board.board[[5, 2]] = board.board[[8, 8]]
 board.board[[8, 8]] = nil
+board.board[[6, 3]] = board.board[[6, 8]]
+board.board[[6, 8]] = nil
 board.render_board
 board.checking_pieces = board.check?([5, 1], :white)
-p board.block_check?([5, 1], :black)
+p board.king_attack_check?(board.checking_pieces[0], :black)

@@ -32,7 +32,13 @@ module Check
     end
   end
 
-  private
+  def attack_check?(colour)
+    return unless @checking_pieces.size == 1
+
+    true if check?(@checking_pieces[0], colour)
+  end
+
+  # private
 
   def find_king(colour)
     board.find { |_coord, piece| piece.instance_of?(King) && piece.player == colour }
@@ -75,5 +81,19 @@ module Check
     return white_pawn_attacks[king_coord].select { |coord| enemy?(coord, colour, Pawn) } if colour == :white
 
     black_pawn_attacks[king_coord].select { |coord| enemy?(coord, colour, Pawn) }
+  end
+
+  def king_attack_check?(checking_coord, colour)
+    return true if king_attacks[checking_coord].any? do |coord|
+      enemy?(coord, colour, King)
+    end && !check?(checking_coord, enemy_colour(colour))
+
+    false
+  end
+
+  def enemy_colour(colour)
+    return :black if colour == :white
+
+    :white
   end
 end

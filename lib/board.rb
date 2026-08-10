@@ -21,9 +21,11 @@ class Board
     @king_attacks = init_attack_maps([[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]])
     @white_pawn_attacks = init_attack_maps([[-1, 1], [1, 1]])
     @black_pawn_attacks = init_attack_maps([[-1, -1], [1, -1]])
+    @captured_pieces = []
   end
 
   def render_board
+    puts "\n"
     render_rows
     puts "   #{Array.new(8, '-' * SQUARE_SIZE).join('')}"
     row = ''
@@ -31,7 +33,14 @@ class Board
     puts "   #{row}"
   end
 
-  private
+  def move(from, to)
+    # puts "ILLEGAL BEHAVIOUR! Your #{board[from].class} cannot be moved to #{to}. Try again" unless legal_move?(from, to)
+    @captured_pieces << board[to] unless board[to].nil?
+    board[to] = board[from]
+    board[from] = nil
+  end
+
+  # private
 
   def init_board
     board = {}
@@ -77,11 +86,10 @@ class Board
 end
 
 board = Board.new
-board.board[[5, 4]] = board.board[[5, 2]]
-board.board[[5, 2]] = board.board[[8, 8]]
-board.board[[8, 8]] = nil
-board.board[[6, 3]] = board.board[[6, 8]]
-board.board[[6, 8]] = nil
+board.move([6, 2], [6, 3])
+board.move([5, 7], [5, 5])
+board.move([7, 2], [7, 4])
+board.move([4, 8], [8, 4])
 board.render_board
 board.checking_pieces = board.check?(:white)
-p board.checkmate?(:white)
+p board.block_check?([5, 1], :white)

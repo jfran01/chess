@@ -1,18 +1,20 @@
 module Check
-  def check?(king_coord, colour)
+  def check?(colour, coord = find_king_coord(colour))
     checking_pieces = []
-    checking_pieces << knight_attacks[king_coord].select { |coord| enemy?(coord, colour, Knight) }
-    checking_pieces << straight_attack?(king_coord, colour)
-    checking_pieces << diagonal_attack?(king_coord, colour)
-    checking_pieces << pawn_attack?(king_coord, colour)
+    checking_pieces << knight_attacks[coord].select { |attacking_coord| enemy?(attacking_coord, colour, Knight) }
+    checking_pieces << straight_attack?(coord, colour)
+    checking_pieces << diagonal_attack?(coord, colour)
+    checking_pieces << pawn_attack?(coord, colour)
     checking_pieces.reject!(&:empty?)
     return checking_pieces unless checking_pieces.empty?
 
     false
   end
 
-  def checkmate?(king_coord, colour)
+  def checkmate?(colour)
     return false unless @checking_pieces.size == 1
+
+    king_coord = find_king_coord(colour)
 
     return true if escape_check?(king_coord, colour) == true
     return true if block_check?(king_coord, colour) == true
@@ -24,8 +26,8 @@ module Check
 
   private
 
-  def find_king(colour)
-    board.each
+  def find_king_coord(colour)
+    board.find { |_coord, piece| piece.instance_of?(King) && piece.player == colour }&.first
   end
 
   def enemy?(coord, colour, piece)
@@ -90,14 +92,14 @@ module Check
 
   # can checking piece be taken by a friendly piece; args = colour of friendly king
   def attack_check?(colour)
-    true if check?(@checking_pieces[0], colour)
+    true if check?(enemy_colour(colour), @checking_pieces[0])
   end
 
   # can king take the checking piece without moving into check
   def king_attack_check?(checking_coord, colour)
     return true if king_attacks[checking_coord].any? do |coord|
       enemy?(coord, colour, King)
-    end && !check?(checking_coord, colour)
+    end && !check?(enemy_colour(colour), checking_coord)
 
     false
   end

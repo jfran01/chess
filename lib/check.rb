@@ -27,6 +27,22 @@ module Check
     true
   end
 
+  def stalemate?(king_colour)
+    # occurs when there are no legal moves that the player of that colour can make
+    # solution 1: find all pieces of that player and check for legal moves
+    # King: use king_attacks map, with output of find_piece_coords as key
+    king_coord = find_piece_coords(King, king_colour)[0]
+    # # can any associated coords be moved to legally? ie aren't occupied & aren't in check
+    return false if king_attacks[king_coord].any? do |coord|
+      (board[coord].nil? || board[coord].player != king_colour) && !check?(king_colour, coord)
+    end
+
+    knight_coords = find_piece_coords(Knight, king_colour)
+    false if knight_coords.any? do |knight_coord|
+      knight_attacks[knight_coord].any? { |coord| board[coord].nil? || board[coord].player != king_colour }
+    end
+  end
+
   private
 
   def find_piece_coords(target_piece, colour)

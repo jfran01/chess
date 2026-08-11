@@ -40,7 +40,7 @@ class Board
     board[from] = nil
   end
 
-  # private
+  private
 
   def init_board
     board = {}
@@ -90,6 +90,7 @@ board.move([6, 2], [6, 3])
 board.move([5, 7], [5, 5])
 board.move([7, 2], [7, 4])
 board.move([4, 8], [8, 4])
+board.move([8, 8], [5, 3])
 board.render_board
 board.checking_pieces = board.check?(:white)
-p board.block_check?([5, 1], :white)
+p board.checkmate?(:white)

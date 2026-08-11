@@ -1,5 +1,5 @@
 module Check
-  def check?(colour, coord = find_piece_coords(King, colour))
+  def check?(colour, coord = find_piece_coords(King, colour)[0])
     checking_pieces = []
     checking_pieces.concat(knight_attacks[coord].select { |attacking_coord| enemy?(attacking_coord, colour, Knight) })
     checking_pieces << straight_attack?(coord, colour)
@@ -11,33 +11,24 @@ module Check
     false
   end
 
-  def checkmate?(colour)
-    @checking_pieces = check?(colour)
-    return unless @checking_pieces
+  def checkmate?(king_colour)
+    @checking_pieces = check?(king_colour)
     return false unless @checking_pieces.size == 1
 
-    king_coord = find_piece_coords(King, colour)
+    king_coord = find_piece_coords(King, king_colour)&.first
 
-    return false if escape_check?(king_coord, colour) == true
-
-    p "can't escape check"
-    return false if block_check?(king_coord, colour) == true
-
-    p "can't block check"
-    return false if attack_check?(colour) == true
-
-    p "can't attack check with non king pieces"
-    return false if king_attack_check?(@checking_pieces[0], colour) == true
-
-    p "can't attack check with king"
+    return false if escape_check?(king_coord, king_colour) == true
+    return false if block_check?(king_coord, king_colour) == true
+    return false if attack_check?(king_colour) == true
+    return false if king_attack_check?(@checking_pieces[0], king_colour) == true
 
     true
   end
 
-  private
+  # private
 
   def find_piece_coords(target_piece, colour)
-    board.find { |_coord, piece| piece.instance_of?(target_piece) && piece.player == colour }&.first
+    board.select { |_coord, piece| piece.instance_of?(target_piece) && piece.player == colour }.keys
   end
 
   def enemy?(coord, colour, piece)
@@ -92,20 +83,35 @@ module Check
     if checking_piece.instance_of?(Rook) || checking_piece.instance_of?(Queen)
       through_coords = checking_piece.slide_straight(@checking_pieces[0], king_coord)
     end
-    if checking_piece.instance_of?(Bishop) || checking_piece.instance_of?(Queen) && !through_coords
+    if (checking_piece.instance_of?(Bishop) || checking_piece.instance_of?(Queen)) && !through_coords
       through_coords = checking_piece.slide_diagonal(@checking_pieces[0], king_coord)
     end
-    through_coords.each do |coord|
-      p coord
-      return true if check?(enemy_colour(colour), coord) # change from check
+    through_coords.any? do |coord|
+      block_check_helper(coord, colour)
     end
   end
 
-  def block_check_helper(coord, colour)
-    return true if knight_attacks[coord].any?{|attacking_coord| enemy?(attacking_coord, colour, Knight)}
-    return true if straight_attack?(coord, colour)
-    return true if diagonal_attack?(coord, colour)
-    return true if 
+  def block_check_helper(coord, king_colour)
+    return true if knight_attacks[coord].any? do |attacking_coord|
+      board[attacking_coord].is_a?(Knight) && board[attacking_coord].player == king_colour
+    end
+    return true unless straight_attack?(coord, enemy_colour(king_colour)).empty?
+    return true unless diagonal_attack?(coord, enemy_colour(king_colour)).empty?
+    return true if pawn_block_check?(coord, king_colour)
+
+    false
+  end
+
+  def pawn_block_check?(coord, colour)
+    if colour == :white
+      coord[1] -= 1
+    else
+      coord[1] += 1
+    end
+    return true if board[coord].is_a?(Pawn) && board[coord].player == colour
+    return true if [3, 6].include?(coord[1]) && pawn_block_check?(coord, colour)
+
+    false
   end
 
   # can checking piece be taken by a friendly piece; args = colour of friendly king

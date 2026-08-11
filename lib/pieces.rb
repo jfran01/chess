@@ -84,6 +84,8 @@ class Queen < Piece
 end
 
 class King < Piece
+  include Slideable
+
   ICONS = { classic: { white: '♚', black: '♔' },
             letters: { white: 'WK', black: 'BK' } }.freeze
 

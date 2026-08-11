@@ -1,5 +1,6 @@
 module CheckMoves
-  def legal_move?(piece, from, to)
+  def legal_move?(from, to)
+    piece = board[from]
     return false unless legal_move_to?(piece, to)
     return false unless legal_slide?(piece, from, to)
     return false unless check_attack_maps(piece, from, to)

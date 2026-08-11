@@ -13,19 +13,19 @@ module Check
 
   def checkmate?(king_colour)
     @checking_pieces = check?(king_colour)
-    return false unless @checking_pieces.size == 1
+    return true unless @checking_pieces.size == 1
 
     king_coord = find_piece_coords(King, king_colour)&.first
 
     return false if escape_check?(king_coord, king_colour) == true
-    return false if block_check?(king_coord, king_colour) == true
     return false if attack_check?(king_colour) == true
+    return false if block_check?(king_coord, king_colour) == true
     return false if king_attack_check?(@checking_pieces[0], king_colour) == true
 
     true
   end
 
-  # private
+  private
 
   def find_piece_coords(target_piece, colour)
     board.select { |_coord, piece| piece.instance_of?(target_piece) && piece.player == colour }.keys

@@ -60,7 +60,7 @@ class Game
     @board.render_board
     return unless captured_piece
 
-    puts "Congratulations! (and commiserations...) #{captured_piece.player} #{captured_piece.class} has been captured."
+    puts "Congratulations! (and commiserations...) A #{captured_piece.player} #{captured_piece.class.downcase} has been captured."
     @captured << captured_piece
   end
 

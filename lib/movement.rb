@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module CheckMoves
   def legal_move?(from, to)
     piece = board[from]

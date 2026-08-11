@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Check
   def check?(colour, coord = find_piece_coords(King, colour)[0])
     checking_pieces = []

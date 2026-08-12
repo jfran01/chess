@@ -140,33 +140,35 @@ end
 module Stalemate
   def stalemate?(king_colour)
     # occurs when there are no legal moves that the player of that colour can make
-    # solution 1: find all pieces of that player and check for legal moves
-    # King: use king_attacks map, with output of find_piece_coords as key
-    king_coord = find_piece_coords(King, king_colour)[0]
-    # # can any associated coords be moved to legally? ie aren't occupied & aren't in check
-    return false if king_attacks[king_coord].any? do |coord|
-      (board[coord].nil? || board[coord].player != king_colour) && !check?(king_colour, coord)
-    end
+    return true if king_or_queen_can_move?(king_colour)
+    return true if knight_can_move?(king_colour)
+    return true if sliding_piece_can_move?(king_colour)
 
-    knight_coords = find_piece_coords(Knight, king_colour)
-    return false if knight_coords.any? do |knight_coord|
-      knight_attacks[knight_coord].any? { |coord| board[coord].nil? || board[coord].player != king_colour }
-    end
-
-    # sliding_pieces finds all enemy sliding pieces, we must therefore invert the colour to get those matching our current king
-    sliding_piece_coords = sliding_pieces(enemy_colour(king_colour)).map(&:first)
+    false
   end
 
   # can king move?
-  def king_can_move?(player_colour)
-    king_coord = find_piece_coords(King, player_colour)[0]
-    king_attacks[king_coord].any? do |coord|
-      available_square(coord, player_colour) && !check(player_colour, coord)
+  def king_or_queen_can_move?(player_colour)
+    # king_attacks map checks all immediate squares, a queen must be able to legally move to an immediate square
+    [King, Queen].any? do |piece_type|
+      piece_coord = find_piece_coords(piece_type, player_colour)[0]
+      king_attacks[piece_coord].any? do |coord|
+        legal_move?(piece_coord, coord)
+      end
     end
   end
 
   # can any knights move?
+  def knight_can_move?(player_colour)
+    find_piece_coords(Knight, player_colour).any? do |coord|
+      knight_attacks[coord].any? { |coord| available_square(coord, player_colour) }
+    end
+  end
+
   # can any sliding pieces move?
+  def sliding_piece_can_move?(player_colour, piece_type, offsets)
+  end
+
   # can any pawns move?
   # is there an available square- either nil or occupied by an enemy piece?
   def available_square(coord, player_colour)

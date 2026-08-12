@@ -1,20 +1,20 @@
 # frozen_string_literal: true
 
 module CheckMoves
-  def legal_move?(from, to)
+  def legal_move?(from, to, player_colour)
     piece = board[from]
-    return false unless legal_move_to?(piece, to)
+    return false unless piece && piece.player == player_colour
+    return false unless available_square(to, player_colour)
     return false unless legal_slide?(piece, from, to)
     return false unless check_attack_maps(piece, from, to)
-    return false if piece.instance_of?(Pawn) && !legal_pawn_move?(piece.player, from, to)
+    return false if piece.instance_of?(Pawn) && !legal_pawn_move?(player_colour, from, to)
+    return false if move_triggers_check?(from, to, player_colour)
 
     true
   end
 
-  def legal_move_to?(piece, to)
-    return true unless board[to]
-
-    piece.player != board[to].player
+  def available_square(coord, player_colour)
+    board[coord].nil? || board[coord].player != player_colour
   end
 
   def legal_slide?(piece, from, to)
@@ -64,6 +64,15 @@ module CheckMoves
       return true if from[1] == 7 && offset == [0, -2]
     end
     false
+  end
+
+  def move_triggers_check?(from, to, colour)
+    captured_piece = board[to]
+    move(from, to, capture_piece: false)
+    result = check?(colour)
+    move(to, from)
+    board[to] = captured_piece
+    result
   end
 end
 

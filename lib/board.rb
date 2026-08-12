@@ -9,6 +9,7 @@ class Board
   include CheckMoves
   include AttackMaps
   include Check
+  include Stalemate
   SQUARE_SIZE = 5
 
   attr_reader :board, :knight_attacks, :king_attacks, :white_pawn_attacks, :black_pawn_attacks
@@ -33,9 +34,8 @@ class Board
     puts "   #{row}"
   end
 
-  def move(from, to)
-    # puts "ILLEGAL BEHAVIOUR! Your #{board[from].class} cannot be moved to #{to}. Try again" unless legal_move?(from, to)
-    @captured_pieces << board[to] unless board[to].nil?
+  def move(from, to, capture_piece: true)
+    @captured_pieces << board[to] unless board[to].nil? || !capture_piece
     board[to] = board[from]
     board[from] = nil
   end
@@ -84,3 +84,7 @@ class Board
     rows.each_with_index { |row, idx| puts "#{(8 - idx).to_s.ljust(2.5)}|#{row}" }
   end
 end
+
+board = Board.new
+board.render_board
+p board.stalemate?(:white)

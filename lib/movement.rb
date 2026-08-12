@@ -47,7 +47,7 @@ module CheckMoves
         return true if white_pawn_attacks[from].include?(to)
       end
     elsif piece.instance_of?(Queen) || piece.instance_of?(Bishop) || piece.instance_of?(Rook)
-      true
+      return true
     end
     false
   end

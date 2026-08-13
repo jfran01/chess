@@ -4,6 +4,7 @@ module Check
   def check?(colour, coord = find_piece_coords(King, colour)[0])
     checking_pieces = []
     checking_pieces.concat(knight_attacks[coord].select { |attacking_coord| enemy?(attacking_coord, colour, Knight) })
+    checking_pieces.concat(king_attacks[coord].select { |attacking_coord| enemy?(attacking_coord, colour, King) })
     checking_pieces << straight_attack?(coord, colour)
     checking_pieces << diagonal_attack?(coord, colour)
     checking_pieces.concat(pawn_attack?(coord, colour))
@@ -140,7 +141,8 @@ end
 module Stalemate
   def stalemate?(king_colour)
     # occurs when there are no legal moves that the player of that colour can make
-    return false if king_or_queen_can_move?(king_colour)
+    return false if king_or_queen_can_move?(king_colour, King)
+    return false if king_or_queen_can_move?(king_colour, Queen)
     return false if knight_can_move?(king_colour)
     return false if sliding_piece_can_move?(king_colour, Rook, [[1, 0], [-1, 0], [0, 1], [0, -1]])
     return false if sliding_piece_can_move?(king_colour, Bishop, [[1, 1], [1, -1], [-1, -1], [-1, 1]])
@@ -150,13 +152,13 @@ module Stalemate
   end
 
   # can king move?
-  def king_or_queen_can_move?(player_colour)
+  def king_or_queen_can_move?(player_colour, piece_type)
     # king_attacks map checks all immediate squares, a queen must be able to legally move to an immediate square
-    [King, Queen].any? do |piece_type|
-      piece_coord = find_piece_coords(piece_type, player_colour)[0]
-      king_attacks[piece_coord].any? do |move_to|
-        legal_move?(piece_coord, move_to, player_colour)
-      end
+    piece_coord = find_piece_coords(piece_type, player_colour)[0]
+    return false unless piece_coord
+
+    king_attacks[piece_coord].any? do |move_to|
+      legal_move?(piece_coord, move_to, player_colour)
     end
   end
 

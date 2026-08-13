@@ -84,7 +84,3 @@ class Board
     rows.each_with_index { |row, idx| puts "#{(8 - idx).to_s.ljust(2.5)}|#{row}" }
   end
 end
-
-board = Board.new
-board.render_board
-p board.stalemate?(:white)

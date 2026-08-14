@@ -18,7 +18,7 @@ class Pawn < Piece
 
   attr_reader :icon
 
-  def initialize(player, icon)
+  def initialize(player, icon = :classic)
     @icon = ICONS[icon][player]
     super
   end
@@ -32,7 +32,7 @@ class Rook < Piece
 
   attr_reader :icon
 
-  def initialize(player, icon)
+  def initialize(player, icon = :classic)
     @icon = ICONS[icon][player]
     super
   end
@@ -44,7 +44,7 @@ class Knight < Piece
 
   attr_reader :icon
 
-  def initialize(player, icon)
+  def initialize(player, icon = :classic)
     @icon = ICONS[icon][player]
     super
     # find_adj
@@ -65,7 +65,7 @@ class Bishop < Piece
 
   attr_reader :icon
 
-  def initialize(player, icon)
+  def initialize(player, icon = :classic)
     @icon = ICONS[icon][player]
     super
   end
@@ -79,7 +79,7 @@ class Queen < Piece
 
   attr_reader :icon
 
-  def initialize(player, icon)
+  def initialize(player, icon = :classic)
     @icon = ICONS[icon][player]
     super
   end
@@ -93,7 +93,7 @@ class King < Piece
 
   attr_reader :icon
 
-  def initialize(player, icon)
+  def initialize(player, icon = :classic)
     @icon = ICONS[icon][player]
     super
   end

@@ -8,7 +8,7 @@ module CheckMoves
     return false unless legal_slide?(piece, from, to)
     return false unless check_attack_maps(piece, from, to)
     return false if piece.instance_of?(Pawn) && !legal_pawn_move?(player_colour, from, to)
-    return false if move_triggers_check?(from, to, player_colour)
+    return false unless move_triggers_check?(from, to, player_colour) == false
 
     true
   end

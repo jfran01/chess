@@ -140,16 +140,29 @@ module Check
 end
 
 module Stalemate
-  def stalemate?(king_colour)
-    # occurs when there are no legal moves that the player of that colour can make
-    return false if king_or_queen_can_move?(king_colour, King)
-    return false if king_or_queen_can_move?(king_colour, Queen)
-    return false if knight_can_move?(king_colour)
-    return false if sliding_piece_can_move?(king_colour, Rook, [[1, 0], [-1, 0], [0, 1], [0, -1]])
-    return false if sliding_piece_can_move?(king_colour, Bishop, [[1, 1], [1, -1], [-1, -1], [-1, 1]])
-    return false if pawn_can_move?(king_colour)
+  def stalemate?(player_colour)
+    return false if get_player_pieces(player_colour).any? do |piece|
+      can_piece_move_hash[piece.class].call(player_colour)
+    end
 
     true
+  end
+
+  def can_piece_move_hash
+    {
+      King => ->(colour) { king_or_queen_can_move?(colour, King) },
+      Queen => ->(colour) { king_or_queen_can_move?(colour, Queen) },
+      Knight => ->(colour) { knight_can_move?(colour) },
+      Rook => ->(colour) { sliding_piece_can_move?(colour, Rook, [[1, 0], [-1, 0], [0, 1], [0, -1]]) },
+      Bishop => ->(colour) { sliding_piece_can_move?(colour, Bishop, [[1, 1], [1, -1], [-1, -1], [-1, 1]]) },
+      Pawn => ->(colour) { pawn_can_move?(colour) }
+    }
+  end
+
+  private
+
+  def get_player_pieces(player_colour)
+    board.reject { |piece| board[piece].nil? || board[piece].player != player_colour }.values
   end
 
   # can king move?
@@ -180,15 +193,15 @@ module Stalemate
   end
 
   # can any pawns move?
-  def pawn_can_move?(player_colour)
-    find_piece_coords(Pawn, player_colour).any? do |pawn_coord|
+  def pawn_can_move?(player_colour, coords = find_piece_coords(Pawn, player_colour))
+    coords.any? do |pawn_coord|
       move_to = pawn_coord
       move_to[1] += if player_colour == :white
                       1
                     else
                       -1
                     end
-      !board[move_to].nil? || board[move_to] != player_colour
+      !board[move_to].nil?
     end
   end
 end

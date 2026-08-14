@@ -119,7 +119,8 @@ module Check
 
   # can checking piece be taken by a friendly piece; args = colour of friendly king
   def attack_check?(colour)
-    true if check?(enemy_colour(colour), @checking_pieces[0])
+    attack_check_pieces = check?(enemy_colour(colour), @checking_pieces[0])
+    true if attack_check_pieces && attack_check_pieces.none? { |piece| board[piece].is_a?(King) } # rubocop:disable Style/SafeNavigation
   end
 
   # can king take the checking piece without moving into check

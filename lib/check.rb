@@ -141,14 +141,14 @@ end
 
 module Stalemate
   def stalemate?(player_colour)
-    return false if get_player_pieces(player_colour).any? do |piece|
-      can_piece_move_hash[piece.class].call(player_colour)
+    return false if get_player_pieces(player_colour).any? do |coord, piece|
+      can_piece_move_hash[piece.class].call(player_colour, coord)
     end
 
     true
   end
 
   def get_player_pieces(player_colour)
-    board.reject { |piece| board[piece].nil? || board[piece].player != player_colour }.values
+    board.reject { |piece| board[piece].nil? || board[piece].player != player_colour }
   end
 end

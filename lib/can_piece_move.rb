@@ -1,6 +1,11 @@
 # frozen_string_literal: true
 
 module PieceMoveability
+  def can_coord_be_moved_from?(from)
+    piece = board[from]
+    can_piece_move_hash[piece.class].call(piece.player)
+  end
+
   def can_piece_move_hash
     {
       King => ->(colour) { king_or_queen_can_move?(colour, King) },
@@ -50,7 +55,7 @@ module PieceMoveability
                     else
                       -1
                     end
-      !board[move_to].nil?
+      board[move_to].nil?
     end
   end
 end

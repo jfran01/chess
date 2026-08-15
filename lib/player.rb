@@ -12,7 +12,7 @@ class Player
   def move_from
     puts 'Enter the square you would like to move from:'
     from_coord = convert_coord(gets.chomp)
-    return from_coord if from_coord.all? { |num| num.between?(1, 8) }
+    return from_coord if from_coord.all? { |num| num.is_a?(Numeric) && num.between?(1, 8) }
 
     puts 'Those coordinates are not in range, please enter a valid letter + number combination'
     move_from

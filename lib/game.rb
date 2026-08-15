@@ -35,7 +35,7 @@ class Game
     @curr_player = @players.reverse![0]
   end
 
-  private
+  # private
 
   def introduce
     puts "Welcome to chess: the classic game of strategy, prediction, and emotional overinvestment.\n"
@@ -65,18 +65,14 @@ class Game
   end
 
   def next_move
-    from_coord = @curr_player.move_from
-    piece = @board.board[from_coord]
-    until !piece.nil? && @curr_player.colour == piece.player
-      puts 'You cannot move from a square that does not contain a piece of your colour; use your own army, imperialist.'
-      from_coord = @curr_player.move_from
-      piece = @board.board[from_coord]
-    end
+    piece, from_coord = next_move_from
     to_coord = @curr_player.move_to
-    return [piece, from_coord, to_coord] if @board.legal_move?(piece, from_coord, to_coord)
-
-    puts "#{piece.class} cannot move to that square. Do better."
-    next_move
+    until @board.legal_move?(from_coord, to_coord, piece.player)
+      puts "piece: #{piece}, from: #{from_coord}, to: #{to_coord}"
+      puts "#{piece.class} cannot move to that square. Do better."
+      to_coord = @curr_player.move_to
+    end
+    [piece, from_coord, to_coord]
   end
 
   RULES = <<~RULES
@@ -113,6 +109,26 @@ class Game
     #{DIVIDER}
 
   RULES
+
+  def next_move_from
+    loop do
+      from_coord = @curr_player.move_from
+      piece = @board.board[from_coord]
+      if piece.nil?
+        puts "You're trying to move a piece that doesn't exist. Get your act together c'mon..."
+      elsif @curr_player.colour != piece.player
+        puts 'You cannot move from a square that does not contain a piece of your colour; use your own army, imperialist.'
+      elsif !@board.can_coord_be_moved_from?(from_coord)
+        puts "That piece cannot move, like, at all... I'd reconsider if I were you..."
+      else
+        return [piece, from_coord]
+      end
+    end
+  end
+
+  def can_coord_be_moved_from?(from_coord)
+    puts @board.can_coord_be_moved_from?(from_coord)
+  end
 end
 
-Game.new.play_game
+Game.new.next_move

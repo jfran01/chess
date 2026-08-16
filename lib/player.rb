@@ -21,6 +21,7 @@ class Player
   def move_to
     puts 'Enter the square you would like to move to:'
     to_coord = convert_coord(gets.chomp)
+    puts "moving to: #{to_coord}"
     return to_coord if to_coord.all? { |num| num.between?(1, 8) }
 
     puts 'Those coordinates are not in range, please enter a valid letter + number combination'

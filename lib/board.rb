@@ -2,14 +2,16 @@
 
 require_relative 'pieces'
 require_relative 'player'
-require_relative 'movement'
-require_relative 'check'
+require_relative 'modules/movement'
+require_relative 'modules/check'
+require_relative 'modules/can_piece_move'
 
 class Board
   include CheckMoves
   include AttackMaps
   include Check
   include Stalemate
+  include PieceMoveability
   SQUARE_SIZE = 5
 
   attr_reader :board, :knight_attacks, :king_attacks, :white_pawn_attacks, :black_pawn_attacks

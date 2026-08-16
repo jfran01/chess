@@ -3,9 +3,11 @@
 require_relative 'player'
 require_relative 'board'
 require_relative 'pieces'
+require_relative 'modules/movement'
 require 'pry-byebug'
 
 class Game
+  include MakeMove
   DIVIDER = '--------------------------------------------'
   RESET = "\e[0m"
   BOLD = "\e[1m"
@@ -36,7 +38,7 @@ class Game
     @curr_player = @players.reverse![0]
   end
 
-  # private
+  private
 
   def introduce
     puts "Welcome to chess: the classic game of strategy, prediction, and emotional overinvestment.\n"

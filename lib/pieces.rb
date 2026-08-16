@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative 'movement'
+require_relative 'modules/movement'
 
 class Piece
   ALPHABET_CONVERTER = ('a'..'z').each.with_index(1).to_h

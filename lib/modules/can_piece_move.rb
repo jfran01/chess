@@ -3,8 +3,7 @@
 module PieceMoveability
   def can_coord_be_moved_from?(from)
     piece = board[from]
-    can_piece_move_hash[piece.class].call(piece.player)
-    binding.pry
+    can_piece_move_hash[piece.class].call(piece.player, from)
   end
 
   def can_piece_move_hash
@@ -47,7 +46,7 @@ module PieceMoveability
 
   # can any pawns move?
   def pawn_can_move?(player_colour, coords)
-    move_to = coords
+    move_to = coords.dup
     move_to[1] += if player_colour == :white
                     1
                   else

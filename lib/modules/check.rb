@@ -31,7 +31,7 @@ module Check
   private
 
   def find_piece_coords(target_piece, colour)
-    board.select { |_coord, piece| piece.instance_of?(target_piece) && piece.player == colour }.keys
+    board.select { |_coord, piece| !piece.nil? && piece.instance_of?(target_piece) && piece.player == colour }.keys
   end
 
   def enemy?(coord, colour, piece)
@@ -44,9 +44,7 @@ module Check
   def sliding_pieces(colour)
     pieces = []
     board.each do |coord, piece|
-      if !piece.nil? && piece.player != colour && (piece.is_a?(Rook) || piece.is_a?(Queen) || piece.is_a?(Bishop))
-        pieces << [coord, piece]
-      end
+      pieces << [coord, piece] if !piece.nil? && piece.player != colour && (piece.is_a?(Rook) || piece.is_a?(Queen) || piece.is_a?(Bishop))
     end
     pieces
   end

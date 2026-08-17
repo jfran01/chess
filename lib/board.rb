@@ -15,7 +15,7 @@ class Board
   SQUARE_SIZE = 5
 
   attr_reader :board, :knight_attacks, :king_attacks, :white_pawn_attacks, :black_pawn_attacks
-  attr_accessor :checking_pieces # remove this line after testing
+  attr_accessor :checking_pieces
 
   def initialize
     @board = init_board

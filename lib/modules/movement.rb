@@ -28,7 +28,7 @@ module CheckMoves
     else
       return true
     end
-    return false if through_coords.any? { |coord| board[coord] }
+    return false if !through_coords || through_coords.any? { |coord| board[coord] }
 
     true
   end
@@ -44,7 +44,7 @@ module CheckMoves
       if piece.player == :white
         return true if white_pawn_attacks[from].include?(to)
       elsif piece.player == :black
-        return true if white_pawn_attacks[from].include?(to)
+        return true if black_pawn_attacks[from].include?(to)
       end
     elsif piece.instance_of?(Queen) || piece.instance_of?(Bishop) || piece.instance_of?(Rook)
       return true
@@ -125,26 +125,39 @@ module Slideable
   end
 end
 
+module SpecialMoves
+  def castling
+  end
+
+  def en_passant
+  end
+
+  def promotion
+  end
+end
+
 module MakeMove
   def move_piece
     moving_piece, from_coord, to_coord = next_move
     captured_piece = @board.board[to_coord]
     @board.board[to_coord] = moving_piece
     @board.board[from_coord] = nil
-    @board.render_board
-    return unless captured_piece
-
-    puts "Congratulations! (and commiserations...) A #{captured_piece.player} #{captured_piece.class.downcase} has been captured."
-    @captured << captured_piece
+    if captured_piece
+      puts "Congratulations! (and commiserations...) A #{captured_piece.player} #{captured_piece.class.to_s.downcase} has been captured."
+      @captured << captured_piece
+    end
+    print_result
   end
 
   def next_move
     piece, from_coord = next_move_from
     to_coord = @curr_player.move_to
     until @board.legal_move?(from_coord, to_coord, piece.player)
-      puts "Your #{piece.class.downcase} cannot move from #{from_coord} to #{to_coord} without imploding. Try again."
+      converted_coords = [convert_coord_to_notation(from_coord), convert_coord_to_notation(to_coord)]
+      puts "Your #{piece.class.to_s.downcase} cannot move from #{converted_coords[0]} to #{converted_coords[1]} without imploding. Try again."
       to_coord = @curr_player.move_to
     end
+    puts "Moving #{piece.class.to_s.downcase} from #{convert_coord_to_notation(from_coord)} to #{convert_coord_to_notation(to_coord)}"
     [piece, from_coord, to_coord]
   end
 
@@ -162,5 +175,22 @@ module MakeMove
         return [piece, from_coord]
       end
     end
+  end
+
+  def print_result
+    puts self.class::DIVIDER
+    captured_pieces = get_captured_pieces(@player1.colour)
+    puts "#{@player2.id}'s captured pieces: #{captured_pieces}\n" unless captured_pieces.empty?
+    @board.render_board
+    captured_pieces = get_captured_pieces(@player2.colour)
+    puts "\n#{@player1.id}'s captured pieces: #{captured_pieces}" unless captured_pieces.empty?
+    puts self.class::DIVIDER
+  end
+
+  def get_captured_pieces(player_colour)
+    captured_pieces = @captured.select { |piece| piece.player == player_colour }
+    captured_icons = []
+    captured_pieces.each { |piece| captured_icons << piece.icon }
+    captured_icons.join
   end
 end

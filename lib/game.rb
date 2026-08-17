@@ -27,9 +27,7 @@ class Game
   end
 
   def play_game
-    play_round
-    play_round
-    play_round
+    play_round until end_of_game?
   end
 
   def play_round
@@ -89,6 +87,20 @@ class Game
     #{DIVIDER}
 
   RULES
+
+  ALPHABET_CONVERTER = ('a'..'z').each.with_index(1).to_h
+
+  def convert_coord_to_notation(coord)
+    notation = ALPHABET_CONVERTER.key(coord[0])
+    notation + coord[1].to_s
+  end
+
+  def end_of_game?
+    @board.checking_pieces = @board.check?(@curr_player.colour)
+    return false unless @board.checking_pieces
+
+    @board.checkmate?(@curr_player.colour) || @board.stalemate?(@curr_player.colour)
+  end
 end
 
-p Game.new.next_move
+Game.new.play_game

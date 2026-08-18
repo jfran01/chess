@@ -128,36 +128,44 @@ end
 
 module SpecialMoves
   def special_move?(moving_piece, from_coord, to_coord)
-    return :castle if moving_piece.is_a?(King) && !moving_piece.moved && castle_next_to_rook?(from_coord,
-                                                                                              to_coord) && castle_through(from_coord, to_coord)
+    return :castle if moving_piece.is_a?(King) && !moving_piece.moved && castling(from_coord, to_coord)
 
     false
   end
 
   def castling(from_coord, to_coord)
+    rook_coord = castle_through(from_coord, to_coord)
+    rook, old_rook_coord = castle_next_to_rook?(from_coord, to_coord)
+    return false unless rook_coord && rook && old_rook_coord
+
+    @board.board[rook_coord] = rook
+    @board.board[old_rook_coord] = nil
     @board.board[to_coord] = @board.board[from_coord]
     @board.board[from_coord] = nil
+    true
   end
 
   def castle_through(from_coord, to_coord)
     colour = @board.board[from_coord].player
     move = to_coord[0] - from_coord[0]
     dx = move <=> 0
+    through = []
     (move.abs - 1).times do |i|
       through = [from_coord[0] + (dx * (i + 1)), from_coord[1]]
       return false if @board.board[through]
       return false if @board.check?(colour, through)
     end
+    through
   end
 
   def castle_next_to_rook?(from_coord, to_coord)
     rook_coord = [from_coord[0] + 3, from_coord[1]]
     rook = @board.board[rook_coord]
-    return rook if rook.is_a?(Rook) && !rook.moved && [rook_coord[0] - 1, rook_coord[1]] == to_coord
+    return [rook, rook_coord] if rook.is_a?(Rook) && !rook.moved && [rook_coord[0] - 1, rook_coord[1]] == to_coord
 
     rook = @board.board[rook_coord]
     rook_coord = [from_coord[0] - 4, from_coord[1]]
-    return rook if rook.is_a?(Rook) && !rook.moved && [rook_coord[0] + 1, rook_coord[1]] == to_coord
+    return [rook, rook_coord] if rook.is_a?(Rook) && !rook.moved && [rook_coord[0] + 1, rook_coord[1]] == to_coord
 
     false
   end

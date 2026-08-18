@@ -134,19 +134,21 @@ module SpecialMoves
   end
 
   def castle_through(from_coord, to_coord)
-    dx = move[0] <=> 0
-    (to_coord[0] - from_coord[0]).abs.times do |i|
-      through_coords << [from_coord[0] + (dx * i), from_coord[1]]
+    move = to_coord[0] - from_coord[0]
+    dx = move <=> 0
+    (move.abs - 1).times do |i|
+      return false if @board.board[[from_coord[0] + (dx * (i + 1)), from_coord[1]]]
     end
-    through_coords
   end
 
   def castle_next_to_rook?(from_coord, to_coord)
     rook_coord = [from_coord[0] + 3, from_coord[1]]
-    return true if @board.board[rook_coord].is_a?(Rook) && [rook_coord[0] - 1, rook_coord[1]] == to_coord
+    rook = @board.board[rook_coord]
+    return true if rook.is_a?(Rook) && !rook.moved && [rook_coord[0] - 1, rook_coord[1]] == to_coord
 
+    rook = @board.board[rook_coord]
     rook_coord = [from_coord[0] - 4, from_coord[1]]
-    return true if [@board.board[rook_coord].is_a?(Rook) && rook_coord[0] + 1, rook_coord[1]] == to_coord
+    return true if rook.is_a?(Rook) && !rook.moved && [rook_coord[0] + 1, rook_coord[1]] == to_coord
 
     false
   end

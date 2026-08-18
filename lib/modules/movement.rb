@@ -9,6 +9,7 @@ module CheckMoves
     return false unless check_attack_maps(piece, from, to)
     return false if piece.instance_of?(Pawn) && !legal_pawn_move?(player_colour, from, to)
     return false unless move_triggers_check?(from, to, player_colour) == false
+    return false unless special_move?(piece, from, to)
 
     true
   end
@@ -127,28 +128,36 @@ end
 
 module SpecialMoves
   def special_move?(moving_piece, from_coord, to_coord)
-    :castle if moving_piece.is_a?(King) && !moving_piece.moved && move_to_rook?(from_coord, to_coord)
+    return :castle if moving_piece.is_a?(King) && !moving_piece.moved && castle_next_to_rook?(from_coord,
+                                                                                              to_coord) && castle_through(from_coord, to_coord)
+
+    false
   end
 
-  def castling
+  def castling(from_coord, to_coord)
+    @board.board[to_coord] = @board.board[from_coord]
+    @board.board[from_coord] = nil
   end
 
   def castle_through(from_coord, to_coord)
+    colour = @board.board[from_coord].player
     move = to_coord[0] - from_coord[0]
     dx = move <=> 0
     (move.abs - 1).times do |i|
-      return false if @board.board[[from_coord[0] + (dx * (i + 1)), from_coord[1]]]
+      through = [from_coord[0] + (dx * (i + 1)), from_coord[1]]
+      return false if @board.board[through]
+      return false if @board.check?(colour, through)
     end
   end
 
   def castle_next_to_rook?(from_coord, to_coord)
     rook_coord = [from_coord[0] + 3, from_coord[1]]
     rook = @board.board[rook_coord]
-    return true if rook.is_a?(Rook) && !rook.moved && [rook_coord[0] - 1, rook_coord[1]] == to_coord
+    return rook if rook.is_a?(Rook) && !rook.moved && [rook_coord[0] - 1, rook_coord[1]] == to_coord
 
     rook = @board.board[rook_coord]
     rook_coord = [from_coord[0] - 4, from_coord[1]]
-    return true if rook.is_a?(Rook) && !rook.moved && [rook_coord[0] + 1, rook_coord[1]] == to_coord
+    return rook if rook.is_a?(Rook) && !rook.moved && [rook_coord[0] + 1, rook_coord[1]] == to_coord
 
     false
   end
@@ -163,9 +172,12 @@ end
 module MakeMove
   def move_piece
     moving_piece, from_coord, to_coord = next_move
-    can_castle?(moving_piece, from_coord, to_coord) if moving_piece.is_a?(King) && !moving_piece.moved
+    if special_move?(moving_piece, from_coord, to_coord) == :castle
+      p 'special'
+    else
+      make_standard_move(moving_piece, from_coord, to_coord)
+    end
     toggle_move_status(moving_piece)
-    make_standard_move(moving_piece, from_coord, to_coord)
     print_result
   end
 

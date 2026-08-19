@@ -8,10 +8,14 @@ require 'pry-byebug'
 
 class Game
   include MakeMove
+  include SpecialMoves
+
   DIVIDER = '--------------------------------------------'
   RESET = "\e[0m"
   BOLD = "\e[1m"
   UNDERLINE = "\e[4m"
+
+  attr_accessor :board
 
   def initialize
     introduce
@@ -102,5 +106,3 @@ class Game
     @board.checkmate?(@curr_player.colour) || @board.stalemate?(@curr_player.colour)
   end
 end
-
-Game.new.play_game

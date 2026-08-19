@@ -103,6 +103,13 @@ class Game
     @board.checking_pieces = @board.check?(@curr_player.colour)
     return false unless @board.checking_pieces
 
-    @board.checkmate?(@curr_player.colour) || @board.stalemate?(@curr_player.colour)
+    if @board.checkmate?(@curr_player.colour)
+      puts "CHECKMATE! #{@players[1]} is victorious and may now decide #{@curr_player}'s fate."
+      return true
+    elsif @board.stalemate?(@curr_player.colour)
+      puts 'STALEMATE. Well played (or commiserations) to you both.'
+      return true
+    end
+    false
   end
 end

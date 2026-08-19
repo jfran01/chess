@@ -1,3 +1,5 @@
+require 'io/console'
+
 class Player
   attr_reader :colour, :id
 

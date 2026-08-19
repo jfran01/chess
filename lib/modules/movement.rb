@@ -80,8 +80,9 @@ end
 module MakeMove
   def move_piece
     moving_piece, from_coord, to_coord = next_move
-    if special_move?(moving_piece, from_coord, to_coord) == :castle
-      p 'special'
+    special_move = special_move?(moving_piece, from_coord, to_coord)
+    if special_move
+      special_moves_hash[special_move].call(moving_piece, from_coord, to_coord)
     else
       make_standard_move(moving_piece, from_coord, to_coord)
     end
@@ -206,14 +207,14 @@ module Slideable
 end
 
 module Castling
-  def castling(from_coord, to_coord)
+  def castling(moving_piece, from_coord, to_coord)
     rook_coord = castle_through(from_coord, to_coord)
     rook, old_rook_coord = castle_next_to_rook?(from_coord, to_coord)
     return false unless rook_coord && rook && old_rook_coord
 
     @board.board[rook_coord] = rook
     @board.board[old_rook_coord] = nil
-    @board.board[to_coord] = @board.board[from_coord]
+    @board.board[to_coord] = moving_piece
     @board.board[from_coord] = nil
     true
   end
@@ -259,9 +260,22 @@ end
 
 module SpecialMoves
   include Castling
+
+  def special_moves_hash
+    { castle: lambda { |moving_piece, from_coord, to_coord|
+      castling(moving_piece, from_coord, to_coord)
+    }, en_passant: lambda { |moving_piece, from_coord, to_coord|
+         en_passant(moving_piece, from_coord, to_coord)
+       }, promotion: lambda { |moving_piece, from_coord, to_coord|
+            promotion(moving_piece, from_coord, to_coord)
+          } }
+  end
+
   def special_move?(moving_piece, from_coord, to_coord)
-    return :castle if moving_piece.is_a?(King) && !moving_piece.moved && castling_coords?(from_coord, to_coord) && castling(from_coord, to_coord)
+    return :castle if moving_piece.is_a?(King) && !moving_piece.moved && castling_coords?(from_coord,
+                                                                                          to_coord) && castling(moving_piece, from_coord, to_coord)
     return :en_passant if moving_piece.is_a?(Pawn) && legal_en_passant?(moving_piece, from_coord, to_coord)
+    return :promotion if moving_piece.is_a?(Pawn) && promotion(moving_piece, from_coord, to_coord)
 
     false
   end
@@ -296,6 +310,20 @@ module SpecialMoves
     [[from_coord[0] + move[0], from_coord[1]], move]
   end
 
-  def promotion
+  def promotion(moving_piece, from_coord, to_coord)
+    if moving_piece.player == :white && to_coord[1] == 8
+      promote_pawn(:white, from_coord, to_coord)
+    elsif moving_piece.player == :black && to_coord[1] == 1
+      promote_pawn(:black, from_coord, to_coord)
+    else
+      false
+    end
+  end
+
+  def promote_pawn(colour, from_coord, to_coord)
+    puts 'Pawn has reached the farthest rank!! Time for a promotion; choose Queen, Bishop, Rook, or Knight.'
+    piece = gets.chomp.capitalize
+    @board.board[to_coord] = piece.new(colour)
+    @board.board[from_coord] = nil
   end
 end

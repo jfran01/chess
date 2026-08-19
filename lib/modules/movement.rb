@@ -5,11 +5,11 @@ module CheckMoves
     piece = board[from]
     return false unless piece && piece.player == player_colour
     return false unless available_square(to, player_colour)
+    return false unless move_triggers_check?(from, to, player_colour) == false
+    return true if special_move?(piece, from, to)
     return false unless legal_slide?(piece, from, to)
     return false unless check_attack_maps(piece, from, to)
     return false if piece.instance_of?(Pawn) && !legal_pawn_move?(player_colour, from, to)
-    return false unless move_triggers_check?(from, to, player_colour) == false
-    return false unless special_move?(piece, from, to)
 
     true
   end
@@ -74,106 +74,6 @@ module CheckMoves
     move(to, from)
     board[to] = captured_piece
     result
-  end
-end
-
-module AttackMaps
-  def init_attack_maps(offsets)
-    map = {}
-    board.each_key do |coord|
-      adj = offsets.map { |dx, dy| [coord[0] + dx, coord[1] + dy] }
-      adj.select! { |x, y| x.between?(1, 8) && y.between?(1, 8) }
-      map[coord] = adj
-    end
-    map
-  end
-end
-
-module Slideable
-  def slide_straight(from, to)
-    move = to.zip(from).map { |a, b| a - b }
-    return false unless move.include?(0)
-
-    through_coords = []
-    if !move[0].zero?
-      direction = move[0] <=> 0
-      (move[0].abs - 1).times do |i|
-        through_coords << [from[0] + (direction * (i + 1)), from[1]]
-      end
-    elsif !move[1].zero?
-      direction = move[1] <=> 0
-      (move[1].abs - 1).times do |i|
-        through_coords << [from[0], from[1] + (direction * (i + 1))]
-      end
-    else
-      return false
-    end
-
-    through_coords
-  end
-
-  def slide_diagonal(from, to)
-    move = to.zip(from).map { |a, b| a - b }
-    return false if move.include?(0) || move[0].abs != move[1].abs
-
-    through_coords = []
-    dx = move[0] <=> 0
-    dy = move[1] <=> 0
-    (move[0].abs - 1).times do |i|
-      through_coords << [from[0] + (dx * (i + 1)), from[1] + (dy * (i + 1))]
-    end
-    through_coords
-  end
-end
-
-module SpecialMoves
-  def special_move?(moving_piece, from_coord, to_coord)
-    return :castle if moving_piece.is_a?(King) && !moving_piece.moved && castling(from_coord, to_coord)
-
-    false
-  end
-
-  def castling(from_coord, to_coord)
-    rook_coord = castle_through(from_coord, to_coord)
-    rook, old_rook_coord = castle_next_to_rook?(from_coord, to_coord)
-    return false unless rook_coord && rook && old_rook_coord
-
-    @board.board[rook_coord] = rook
-    @board.board[old_rook_coord] = nil
-    @board.board[to_coord] = @board.board[from_coord]
-    @board.board[from_coord] = nil
-    true
-  end
-
-  def castle_through(from_coord, to_coord)
-    colour = @board.board[from_coord].player
-    move = to_coord[0] - from_coord[0]
-    dx = move <=> 0
-    through = []
-    (move.abs - 1).times do |i|
-      through = [from_coord[0] + (dx * (i + 1)), from_coord[1]]
-      return false if @board.board[through]
-      return false if @board.check?(colour, through)
-    end
-    through
-  end
-
-  def castle_next_to_rook?(from_coord, to_coord)
-    rook_coord = [from_coord[0] + 3, from_coord[1]]
-    rook = @board.board[rook_coord]
-    return [rook, rook_coord] if rook.is_a?(Rook) && !rook.moved && [rook_coord[0] - 1, rook_coord[1]] == to_coord
-
-    rook = @board.board[rook_coord]
-    rook_coord = [from_coord[0] - 4, from_coord[1]]
-    return [rook, rook_coord] if rook.is_a?(Rook) && !rook.moved && [rook_coord[0] + 1, rook_coord[1]] == to_coord
-
-    false
-  end
-
-  def en_passant
-  end
-
-  def promotion
   end
 end
 
@@ -253,5 +153,149 @@ module MakeMove
     return unless (piece.is_a?(King) || piece.is_a?(Rook)) && !piece.moved
 
     piece.moved = true
+  end
+end
+
+module AttackMaps
+  def init_attack_maps(offsets)
+    map = {}
+    board.each_key do |coord|
+      adj = offsets.map { |dx, dy| [coord[0] + dx, coord[1] + dy] }
+      adj.select! { |x, y| x.between?(1, 8) && y.between?(1, 8) }
+      map[coord] = adj
+    end
+    map
+  end
+end
+
+module Slideable
+  def slide_straight(from, to)
+    move = to.zip(from).map { |a, b| a - b }
+    return false unless move.include?(0)
+
+    through_coords = []
+    if !move[0].zero?
+      direction = move[0] <=> 0
+      (move[0].abs - 1).times do |i|
+        through_coords << [from[0] + (direction * (i + 1)), from[1]]
+      end
+    elsif !move[1].zero?
+      direction = move[1] <=> 0
+      (move[1].abs - 1).times do |i|
+        through_coords << [from[0], from[1] + (direction * (i + 1))]
+      end
+    else
+      return false
+    end
+
+    through_coords
+  end
+
+  def slide_diagonal(from, to)
+    move = to.zip(from).map { |a, b| a - b }
+    return false if move.include?(0) || move[0].abs != move[1].abs
+
+    through_coords = []
+    dx = move[0] <=> 0
+    dy = move[1] <=> 0
+    (move[0].abs - 1).times do |i|
+      through_coords << [from[0] + (dx * (i + 1)), from[1] + (dy * (i + 1))]
+    end
+    through_coords
+  end
+end
+
+module Castling
+  def castling(from_coord, to_coord)
+    rook_coord = castle_through(from_coord, to_coord)
+    rook, old_rook_coord = castle_next_to_rook?(from_coord, to_coord)
+    return false unless rook_coord && rook && old_rook_coord
+
+    @board.board[rook_coord] = rook
+    @board.board[old_rook_coord] = nil
+    @board.board[to_coord] = @board.board[from_coord]
+    @board.board[from_coord] = nil
+    true
+  end
+
+  def castling_coords?(from_coord, to_coord)
+    if from_coord == [5, 1]
+      return true if to_coord == [7, 1]
+      return true if to_coord == [2, 1]
+    elsif from_coord == [5, 8]
+      return true if to_coord == [7, 8]
+      return true if to_coord == [2, 8]
+    end
+    false
+  end
+
+  private
+
+  def castle_through(from_coord, to_coord)
+    colour = @board.board[from_coord].player
+    move = to_coord[0] - from_coord[0]
+    dx = move <=> 0
+    through = []
+    (move.abs - 1).times do |i|
+      through = [from_coord[0] + (dx * (i + 1)), from_coord[1]]
+      return false if @board.board[through]
+      return false if @board.check?(colour, through)
+    end
+    through
+  end
+
+  def castle_next_to_rook?(from_coord, to_coord)
+    rook_coord = [from_coord[0] + 3, from_coord[1]]
+    rook = @board.board[rook_coord]
+    return [rook, rook_coord] if rook.is_a?(Rook) && !rook.moved && [rook_coord[0] - 1, rook_coord[1]] == to_coord
+
+    rook = @board.board[rook_coord]
+    rook_coord = [from_coord[0] - 4, from_coord[1]]
+    return [rook, rook_coord] if rook.is_a?(Rook) && !rook.moved && [rook_coord[0] + 1, rook_coord[1]] == to_coord
+
+    false
+  end
+end
+
+module SpecialMoves
+  include Castling
+  def special_move?(moving_piece, from_coord, to_coord)
+    return :castle if moving_piece.is_a?(King) && !moving_piece.moved && castling_coords?(from_coord, to_coord) && castling(from_coord, to_coord)
+    return :en_passant if moving_piece.is_a?(Pawn) && legal_en_passant?(moving_piece, from_coord, to_coord)
+
+    false
+  end
+
+  def en_passant(moving_piece, from_coord, to_coord)
+    captured_piece = @board.board[captive_pawn_coord(from_coord, to_coord)]
+    @board.board[to_coord] = moving_piece
+    @board.board[from_coord] = nil
+    return unless captured_piece
+
+    puts "Congratulations! (and commiserations...) A #{captured_piece.player} #{captured_piece.class.to_s.downcase} has been captured."
+    @captured << captured_piece
+  end
+
+  def legal_en_passant?(captor_pawn, from_coord, to_coord)
+    captive_pawn_coord, move = captive_pawn_coord(from_coord, to_coord)
+    return false unless captive_pawn_coord
+
+    captive_pawn = @board.board[captive_pawn_coord]
+    return false if captive_pawn.nil?
+    return false if captor_pawn.player == captive_pawn.player
+    return false if captive_pawn.player == :white && captive_pawn_coord[1] != 4 && move[1] != 1
+    return false if captive_pawn.player == :black && captive_pawn_coord[1] != 5 && move[1] != -1
+
+    true
+  end
+
+  def captive_pawn_coord(from_coord, to_coord)
+    move = to_coord.zip(from_coord).map { |a, b| a - b }
+    return false unless [[-1, 1], [1, 1], [-1, -1], [1, -1]].any? { |offset| offset == move }
+
+    [[from_coord[0] + move[0], from_coord[1]], move]
+  end
+
+  def promotion
   end
 end

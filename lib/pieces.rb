@@ -31,9 +31,11 @@ class Rook < Piece
             letters: { white: 'WR', black: 'BR' } }.freeze
 
   attr_reader :icon
+  attr_accessor :moved
 
   def initialize(player, icon = :classic)
     @icon = ICONS[icon][player]
+    @moved = false
     super
   end
 end
@@ -92,9 +94,11 @@ class King < Piece
             letters: { white: 'WK', black: 'BK' } }.freeze
 
   attr_reader :icon
+  attr_accessor :moved
 
   def initialize(player, icon = :classic)
     @icon = ICONS[icon][player]
+    @moved = false
     super
   end
 end

@@ -12,6 +12,7 @@ class Board
   include Check
   include Stalemate
   include PieceMoveability
+  include SpecialMoves
   SQUARE_SIZE = 5
 
   attr_reader :board, :knight_attacks, :king_attacks, :white_pawn_attacks, :black_pawn_attacks

@@ -1,17 +1,24 @@
 require 'io/console'
+require_relative 'modules/save_game'
 
 class Player
-  attr_reader :colour, :id
+  attr_reader :colour, :id, :num
 
-  def initialize(id, colour)
-    @id = id
+  def initialize(num, colour)
+    @num = num
+    @id = num
     @colour = colour
     choose_name
   end
 
   def move_from
     puts 'Enter the square you would like to move from:'
-    from_coord = convert_coord(get_input.chomp)
+    input = get_input
+    return :save_game if input == :save_game
+
+    exit! if input == :quit_game
+
+    from_coord = convert_coord(input.chomp)
     return from_coord if from_coord.all? { |num| num.is_a?(Numeric) && num.between?(1, 8) }
 
     puts 'Those coordinates are not in range, please enter a valid letter + number combination'
@@ -20,7 +27,12 @@ class Player
 
   def move_to
     puts 'Enter the square you would like to move to:'
-    to_coord = convert_coord(get_input.chomp)
+    input = get_input
+    return :save_game if input == :save_game
+
+    exit! if input == :quit_game
+
+    to_coord = convert_coord(input.chomp)
     return to_coord if to_coord.all? { |num| num.between?(1, 8) }
 
     puts 'Those coordinates are not in range, please enter a valid letter + number combination'
@@ -46,14 +58,17 @@ class Player
   def get_input
     input = ''
     loop do
-      char = STDIN.getch
+      char = $stdin.getch
 
       case char
       when "\cs"
-        print 'ctrl + s'
-        return
+        puts 'Things are getting to intense huh? Take a break?'
+        puts '[Y]es or [N]o:'
+        return :save_game if confirm?
       when "\cq"
-        print 'ctrl + q'
+        puts "You're about to quit the game and delete your progress. Are you sure that's what you want??"
+        puts '[Y]es or [N]o:'
+        exit! if confirm?
       when "\r"
         puts
         return input
@@ -64,6 +79,17 @@ class Player
         print char
         input << char
       end
+    end
+  end
+
+  def confirm?
+    loop do
+      answer = get_input.chomp.downcase
+
+      return true if answer.start_with?('y')
+      return false if answer.start_with?('n')
+
+      puts 'Please enter [Y]es or [N]o'
     end
   end
 end

@@ -80,6 +80,8 @@ end
 module MakeMove
   def move_piece(curr_player)
     moving_piece, from_coord, to_coord = next_move(curr_player)
+    return :save_game if moving_piece == :save_game
+
     special_move = special_move?(moving_piece, from_coord, to_coord)
     if special_move
       special_moves_hash[special_move].call(moving_piece, from_coord, to_coord)
@@ -101,7 +103,11 @@ module MakeMove
 
   def next_move(curr_player)
     piece, from_coord = next_move_from(curr_player)
+    return :save_game if piece == :save_game
+
     to_coord = next_move_to(curr_player, from_coord, piece)
+    return :save_game if to_coord == :save_game
+
     puts "Moving #{piece.class.to_s.downcase} from #{convert_coord_to_notation(from_coord)} to #{convert_coord_to_notation(to_coord)}"
     [piece, from_coord, to_coord]
   end
@@ -109,6 +115,8 @@ module MakeMove
   def next_move_from(curr_player)
     loop do
       from_coord = curr_player.move_from
+      return :save_game if from_coord == :save_game
+
       piece = board[from_coord]
       if piece.nil?
         puts "You're trying to move a piece that doesn't exist. Get your act together c'mon..."
@@ -124,6 +132,8 @@ module MakeMove
 
   def next_move_to(curr_player, from_coord, piece)
     to_coord = curr_player.move_to
+    return :save_game if to_coord == :save_game
+
     until legal_move?(from_coord, to_coord, piece.player)
       converted_coords = [convert_coord_to_notation(from_coord), convert_coord_to_notation(to_coord)]
       puts "Your #{piece.class.to_s.downcase} cannot move from #{converted_coords[0]} to #{converted_coords[1]} without imploding. Try again."

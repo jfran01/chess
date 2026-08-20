@@ -16,9 +16,9 @@ module SaveGame
   def self.from_saved_data
     filename = fetch_saved_data
     filename = File.join('saved_games', filename)
-    game_data = YAML.load_file(filename)
-    File.delete(filename)
-    game_data
+    YAML.load_file(filename, permitted_classes: [Board,
+                                                 King, Queen, Bishop, Rook, Knight, Pawn, Symbol, Player],
+                             aliases: true)
   end
 
   def self.fetch_saved_data
@@ -26,5 +26,19 @@ module SaveGame
     puts "You have #{games.size} games saved. Choose one:"
     games.each_with_index { |filename, idx| puts "\e[1m(#{idx + 1})\e[0m #{filename}" }
     games[gets.chomp.to_i - 1]
+  end
+
+  def load_game
+    saved_data = SaveGame.from_saved_data
+    @board = saved_data[:board]
+    @players = saved_data[:players]
+    @curr_player = @players[0]
+    @players.each do |player|
+      if player.num == 1
+        @player1 = player
+      elsif player.num == 2
+        @player2 = player
+      end
+    end
   end
 end

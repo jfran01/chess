@@ -35,7 +35,8 @@ class Game
 
   def play_round
     puts "\n\e[4m#{@curr_player.id}'s turn\e[0m"
-    @board.move_piece(@curr_player)
+    move = @board.move_piece(@curr_player)
+    save_game if move == :save_game
     print_result
     @curr_player = @players.reverse![0]
   end
@@ -43,7 +44,7 @@ class Game
   def save_game
     @filename = "#{players[0].id}_vs_#{players[1].id}" unless filename
     SaveGame.to_saved_data(@board, @players)
-    puts 'To be continued...'
+    puts "\e[1mTo be continued...\e[0m"
     puts "Game saved under #{@filename}"
     exit!
   end
@@ -52,6 +53,10 @@ class Game
 
   def introduce
     puts "Welcome to chess: the classic game of strategy, prediction, and emotional overinvestment.\n"
+    puts 'Would you like to continue a game, or start afresh?'
+    puts '[C]ontinue or Start [N]ew:'
+    answer = gets.upcase
+    load_game if answer.start_with?('C')
     describe_moves
   end
 
@@ -133,4 +138,4 @@ class Game
 end
 
 game = Game.new
-game.save_game
+game.play_game

@@ -19,11 +19,11 @@ class Game
 
   def initialize
     introduce
-    @board = Board.new
-    @player1 = Player.new(1, :white)
-    @player2 = Player.new(2, :black)
-    @players = [@player1, @player2]
-    @curr_player = @players[0]
+    @board ||= Board.new
+    @player1 ||= Player.new(1, :white)
+    @player2 ||= Player.new(2, :black)
+    @players ||= [@player1, @player2]
+    @curr_player ||= @players[0]
     puts DIVIDER
     @board.render_board
     puts DIVIDER
@@ -47,6 +47,20 @@ class Game
     puts "\e[1mTo be continued...\e[0m"
     puts "Game saved under #{@filename}"
     exit!
+  end
+
+  def load_game
+    saved_data = SaveGame.from_saved_data
+    @board = saved_data[:board]
+    @players = saved_data[:players]
+    @curr_player = @players[0]
+    @players.each do |player|
+      if player.num == 1
+        @player1 = player
+      elsif player.num == 2
+        @player2 = player
+      end
+    end
   end
 
   private

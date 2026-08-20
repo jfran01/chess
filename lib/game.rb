@@ -3,16 +3,19 @@
 require_relative 'player'
 require_relative 'board'
 require_relative 'pieces'
-require_relative 'modules/movement'
+require_relative 'modules/save_game'
 require 'pry-byebug'
 
 class Game
+  include SaveGame
+
   DIVIDER = '--------------------------------------------'
   RESET = "\e[0m"
   BOLD = "\e[1m"
   UNDERLINE = "\e[4m"
 
   attr_accessor :board
+  attr_reader :players, :filename
 
   def initialize
     introduce
@@ -21,7 +24,6 @@ class Game
     @player2 = Player.new(2, :black)
     @players = [@player1, @player2]
     @curr_player = @players[0]
-    @captured = []
     puts DIVIDER
     @board.render_board
     puts DIVIDER
@@ -36,6 +38,14 @@ class Game
     @board.move_piece(@curr_player)
     print_result
     @curr_player = @players.reverse![0]
+  end
+
+  def save_game
+    @filename = "#{players[0].id}_vs_#{players[1].id}" unless filename
+    SaveGame.to_saved_data(@board, @players)
+    puts 'To be continued...'
+    puts "Game saved under #{@filename}"
+    exit!
   end
 
   private
@@ -123,4 +133,4 @@ class Game
 end
 
 game = Game.new
-game.play_game
+game.save_game

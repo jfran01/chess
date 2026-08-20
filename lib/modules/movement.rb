@@ -273,13 +273,15 @@ module SpecialMoves
   end
 
   def en_passant(moving_piece, from_coord, to_coord)
-    captured_piece = board[captive_pawn_coord(moving_piece, from_coord, to_coord)]
+    captive_pawn_coord = captive_pawn_coord(moving_piece, from_coord, to_coord)[0]
+    captured_piece = board[captive_pawn_coord]
     board[to_coord] = moving_piece
     board[from_coord] = nil
     return unless captured_piece
 
     puts "Congratulations! (and commiserations...) A #{captured_piece.player} #{captured_piece.class.to_s.downcase} has been captured."
-    @captured << captured_piece
+    board[captive_pawn_coord] = nil
+    @captured_pieces << captured_piece
   end
 
   def legal_en_passant?(captor_pawn, from_coord, to_coord)

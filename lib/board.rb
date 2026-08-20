@@ -12,10 +12,11 @@ class Board
   include Check
   include Stalemate
   include PieceMoveability
+  include MakeMove
   include SpecialMoves
   SQUARE_SIZE = 5
 
-  attr_reader :board, :knight_attacks, :king_attacks, :white_pawn_attacks, :black_pawn_attacks
+  attr_reader :board, :captured_pieces, :knight_attacks, :king_attacks, :white_pawn_attacks, :black_pawn_attacks
   attr_accessor :checking_pieces
 
   def initialize
@@ -85,5 +86,12 @@ class Board
     rows = []
     icons.each_slice(8) { |slice| rows << slice.join }
     rows.each_with_index { |row, idx| puts "#{(8 - idx).to_s.ljust(2.5)}|#{row}" }
+  end
+
+  ALPHABET_CONVERTER = ('a'..'z').each.with_index(1).to_h
+
+  def convert_coord_to_notation(coord)
+    notation = ALPHABET_CONVERTER.key(coord[0])
+    notation + coord[1].to_s
   end
 end

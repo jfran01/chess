@@ -7,9 +7,6 @@ require_relative 'modules/movement'
 require 'pry-byebug'
 
 class Game
-  include MakeMove
-  include SpecialMoves
-
   DIVIDER = '--------------------------------------------'
   RESET = "\e[0m"
   BOLD = "\e[1m"
@@ -36,7 +33,8 @@ class Game
 
   def play_round
     puts "\n\e[4m#{@curr_player.id}'s turn\e[0m"
-    move_piece
+    @board.move_piece(@curr_player)
+    print_result
     @curr_player = @players.reverse![0]
   end
 
@@ -92,11 +90,21 @@ class Game
 
   RULES
 
-  ALPHABET_CONVERTER = ('a'..'z').each.with_index(1).to_h
+  def print_result
+    puts self.class::DIVIDER
+    captured_pieces = get_captured_pieces(@player1.colour)
+    puts "#{@player2.id}'s captured pieces: #{captured_pieces}\n" unless captured_pieces.empty?
+    @board.render_board
+    captured_pieces = get_captured_pieces(@player2.colour)
+    puts "\n#{@player1.id}'s captured pieces: #{captured_pieces}" unless captured_pieces.empty?
+    puts self.class::DIVIDER
+  end
 
-  def convert_coord_to_notation(coord)
-    notation = ALPHABET_CONVERTER.key(coord[0])
-    notation + coord[1].to_s
+  def get_captured_pieces(player_colour)
+    captured_pieces = @board.captured_pieces.select { |piece| piece.player == player_colour }
+    captured_icons = []
+    captured_pieces.each { |piece| captured_icons << piece.icon }
+    captured_icons.join
   end
 
   def end_of_game?
@@ -113,3 +121,6 @@ class Game
     false
   end
 end
+
+game = Game.new
+game.play_game

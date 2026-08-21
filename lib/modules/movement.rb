@@ -79,13 +79,16 @@ end
 
 module MakeMove
   def move_piece(curr_player)
+    p 'move piece called'
     moving_piece, from_coord, to_coord = next_move(curr_player)
     return :save_game if moving_piece == :save_game
 
     special_move = special_move?(moving_piece, from_coord, to_coord)
     if special_move
+      p 'special_move called'
       special_moves_hash[special_move].call(moving_piece, from_coord, to_coord)
     else
+      p 'standard move called'
       make_standard_move(moving_piece, from_coord, to_coord)
     end
     toggle_move_status(moving_piece)
@@ -199,15 +202,27 @@ module Slideable
 end
 
 module Castling
-  def castling(moving_piece, from_coord, to_coord)
-    rook_coord = castle_through(from_coord, to_coord)
-    rook, old_rook_coord = castle_next_to_rook?(from_coord, to_coord)
-    return false unless rook_coord && rook && old_rook_coord
+  # def castling(moving_piece, from_coord, to_coord)
+  #   p 'castling called'
+  #   rook_coord = castle_through(moving_piece, from_coord, to_coord)
+  #   rook, old_rook_coord = castle_next_to_rook?(from_coord, to_coord)
+  #   return false unless rook_coord && rook && old_rook_coord
 
-    board[rook_coord] = rook
-    board[old_rook_coord] = nil
-    board[to_coord] = moving_piece
-    board[from_coord] = nil
+  #   board[rook_coord] = rook
+  #   board[old_rook_coord] = nil
+  #   board[to_coord] = moving_piece
+  #   board[from_coord] = nil
+  #   true
+  # end
+
+  def legal_castling?(moving_piece, from_coord, to_coord)
+    return false unless moving_piece.is_a?(King)
+    return false if moving_piece.moved
+    return false unless castling_coords?(from_coord, to_coord)
+
+    move = to_coord[0] - from_coord[0]
+    dir = move <=> 0
+    p next_to_rook?(to_coord, dir)
     true
   end
 
@@ -224,8 +239,8 @@ module Castling
 
   private
 
-  def castle_through(from_coord, to_coord)
-    colour = board[from_coord].player
+  def castle_through(moving_piece, from_coord, to_coord)
+    colour = moving_piece.player
     move = to_coord[0] - from_coord[0]
     dx = move <=> 0
     through = []
@@ -247,6 +262,10 @@ module Castling
     return [rook, rook_coord] if rook.is_a?(Rook) && !rook.moved && [rook_coord[0] + 1, rook_coord[1]] == to_coord
 
     false
+  end
+
+  def next_to_rook?(to_coord, dir)
+    rook_coord = [to_coord[0] + dir, to_coord[1]]
   end
 end
 
@@ -306,9 +325,12 @@ module SpecialMoves
   end
 
   def promotion(moving_piece, from_coord, to_coord)
-    if moving_piece.player == :white && to_coord[1] == 8
+    colour = moving_piece.player
+    return false unless legal_pawn_move?(colour, from_coord, to_coord) || check_attack_maps(moving_piece, from_coord, to_coord)
+
+    if colour == :white && to_coord[1] == 8
       promote_pawn(:white, from_coord, to_coord)
-    elsif moving_piece.player == :black && to_coord[1] == 1
+    elsif colour == :black && to_coord[1] == 1
       promote_pawn(:black, from_coord, to_coord)
     else
       false

@@ -275,7 +275,7 @@ module SpecialMoves
   def special_move?(moving_piece, from_coord, to_coord)
     return :castle if moving_piece.is_a?(King) && !moving_piece.moved && legal_castling?(moving_piece, from_coord, to_coord)
     return :en_passant if moving_piece.is_a?(Pawn) && legal_en_passant?(moving_piece, from_coord, to_coord)
-    return :promotion if moving_piece.is_a?(Pawn) && promotion(moving_piece, from_coord, to_coord)
+    return :promotion if moving_piece.is_a?(Pawn) && legal_promotion?(moving_piece, from_coord, to_coord)
 
     false
   end
@@ -326,10 +326,39 @@ module SpecialMoves
     end
   end
 
+  def legal_promotion?(moving_piece, from_coord, to_coord)
+    return false unless legal_move?(from_coord, to_coord, moving_piece.colour)
+
+    if moving_piece.colour == :white
+      return false unless to_coord[1] == 8
+    elsif moving_piece.colour == :black
+      return false unless to_coord[1] == 1
+    end
+
+    true
+  end
+
   def promote_pawn(colour, from_coord, to_coord)
     puts 'Pawn has reached the farthest rank!! Time for a promotion; choose Queen, Bishop, Rook, or Knight.'
-    piece = gets.chomp.capitalize
+    piece = get_piece_type(gets.chomp.capitalize)
     board[to_coord] = piece.new(colour)
     board[from_coord] = nil
+  end
+
+  def get_piece_type(user_input)
+    case user_input
+    when user_input.start_with?('Ki')
+      King
+    when user_input.start_with?('Q')
+      Queen
+    when user_input.start_with?('B')
+      Bishop
+    when user_input.start_with?('Kn')
+      Knight
+    when user_input.start_with?('R')
+      Rook
+    when user_input.start_with?('P')
+      Pawn
+    end
   end
 end

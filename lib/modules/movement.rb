@@ -202,31 +202,35 @@ module Slideable
 end
 
 module Castling
-  # def castling(moving_piece, from_coord, to_coord)
-  #   p 'castling called'
-  #   rook_coord = castle_through(moving_piece, from_coord, to_coord)
-  #   rook, old_rook_coord = castle_next_to_rook?(from_coord, to_coord)
-  #   return false unless rook_coord && rook && old_rook_coord
-
-  #   board[rook_coord] = rook
-  #   board[old_rook_coord] = nil
-  #   board[to_coord] = moving_piece
-  #   board[from_coord] = nil
-  #   true
-  # end
+  def castling(moving_piece, from_coord, to_coord)
+    _move, dir = castle_move_dir(from_coord, to_coord)
+    board[to_coord] = moving_piece
+    board[from_coord] = nil
+    old_rook_coord = to_coord[0] + dir, to_coord[1]
+    new_rook_coord = to_coord[0] - dir, to_coord[1]
+    board[new_rook_coord] = board[old_rook_coord]
+    board[old_rook_coord] = nil
+  end
 
   def legal_castling?(moving_piece, from_coord, to_coord)
     return false unless moving_piece.is_a?(King)
     return false if moving_piece.moved
     return false unless castling_coords?(from_coord, to_coord)
 
-    move = to_coord[0] - from_coord[0]
-    dir = move <=> 0
+    move, dir = castle_move_dir(from_coord, to_coord)
     adj_rook = next_to_rook?(to_coord, dir)
     return false unless adj_rook.is_a?(Rook) && !adj_rook.moved && adj_rook.player == moving_piece.player
-    return false unless castle_through(from_coord, move, dir, :white)
+    return false unless castle_through(from_coord, move, dir, moving_piece.player)
 
     true
+  end
+
+  private
+
+  def castle_move_dir(from_coord, to_coord)
+    move = to_coord[0] - from_coord[0]
+    dir = move <=> 0
+    [move, dir]
   end
 
   def castling_coords?(from_coord, to_coord)
@@ -240,10 +244,7 @@ module Castling
     false
   end
 
-  private
-
   def castle_through(from_coord, move, dir, colour)
-    p move.abs
     (move.abs + 1).times do |i|
       through = [from_coord[0] + (dir * i), from_coord[1]]
       return false if board[through]
@@ -272,8 +273,7 @@ module SpecialMoves
   end
 
   def special_move?(moving_piece, from_coord, to_coord)
-    return :castle if moving_piece.is_a?(King) && !moving_piece.moved && castling_coords?(from_coord,
-                                                                                          to_coord) && castling(moving_piece, from_coord, to_coord)
+    return :castle if moving_piece.is_a?(King) && !moving_piece.moved && legal_castling?(moving_piece, from_coord, to_coord)
     return :en_passant if moving_piece.is_a?(Pawn) && legal_en_passant?(moving_piece, from_coord, to_coord)
     return :promotion if moving_piece.is_a?(Pawn) && promotion(moving_piece, from_coord, to_coord)
 

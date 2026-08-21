@@ -222,7 +222,10 @@ module Castling
 
     move = to_coord[0] - from_coord[0]
     dir = move <=> 0
-    p next_to_rook?(to_coord, dir)
+    adj_rook = next_to_rook?(to_coord, dir)
+    return false unless adj_rook.is_a?(Rook) && !adj_rook.moved && adj_rook.player == moving_piece.player
+    return false unless castle_through(from_coord, move, dir, :white)
+
     true
   end
 
@@ -239,33 +242,19 @@ module Castling
 
   private
 
-  def castle_through(moving_piece, from_coord, to_coord)
-    colour = moving_piece.player
-    move = to_coord[0] - from_coord[0]
-    dx = move <=> 0
-    through = []
-    (move.abs - 1).times do |i|
-      through = [from_coord[0] + (dx * (i + 1)), from_coord[1]]
+  def castle_through(from_coord, move, dir, colour)
+    p move.abs
+    (move.abs + 1).times do |i|
+      through = [from_coord[0] + (dir * i), from_coord[1]]
       return false if board[through]
       return false if check?(colour, through)
     end
-    through
-  end
-
-  def castle_next_to_rook?(from_coord, to_coord)
-    rook_coord = [from_coord[0] + 3, from_coord[1]]
-    rook = board[rook_coord]
-    return [rook, rook_coord] if rook.is_a?(Rook) && !rook.moved && [rook_coord[0] - 1, rook_coord[1]] == to_coord
-
-    rook = board[rook_coord]
-    rook_coord = [from_coord[0] - 4, from_coord[1]]
-    return [rook, rook_coord] if rook.is_a?(Rook) && !rook.moved && [rook_coord[0] + 1, rook_coord[1]] == to_coord
-
-    false
+    true
   end
 
   def next_to_rook?(to_coord, dir)
     rook_coord = [to_coord[0] + dir, to_coord[1]]
+    board[rook_coord]
   end
 end
 

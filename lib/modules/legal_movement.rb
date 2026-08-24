@@ -158,12 +158,32 @@ module Castling
   end
 end
 
-module LegalMove
+module GenAttackMaps
+  def init_attack_maps
+    @adj_squares = attack_maps_helper([[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]])
+    @knight_attacks = attack_maps_helper([[2, 1], [-2, 1], [2, -1], [-2, -1], [1, 2], [-1, 2], [1, -2], [-1, -2]])
+    @white_pawn_attacks = attack_maps_helper([[-1, 1], [1, 1]])
+    @black_pawn_attacks = attack_maps_helper([[-1, -1], [1, -1]])
+  end
+
+  def attack_maps_helper(offsets)
+    map = {}
+    board.each_key do |coord|
+      adj = offsets.map { |dx, dy| [coord[0] + dx, coord[1] + dy] }
+      adj.select! { |x, y| x.between?(1, 8) && y.between?(1, 8) }
+      map[coord] = adj
+    end
+    map
+  end
+end
+
+module LegalMoveTo
   include PawnMoves
   include SlidingMoves
   include Castling
   def legal_move_to?(moving_piece, from_coord, to_coord)
     colour = moving_piece.player
+    return false if board[from_coord].nil?
     return false unless empty_or_enemy?(to_coord, colour)
     return false if check_for_adj_king(to_coord, colour)
     return false if move_triggers_check(from_coord, to_coord, colour)
@@ -201,32 +221,47 @@ module LegalMove
   end
 end
 
-module GenAttackMaps
-  def init_attack_maps
-    @adj_squares = attack_maps_helper([[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]])
-    @knight_attacks = attack_maps_helper([[2, 1], [-2, 1], [2, -1], [-2, -1], [1, 2], [-1, 2], [1, -2], [-1, -2]])
-    @white_pawn_attacks = attack_maps_helper([[-1, 1], [1, 1]])
-    @black_pawn_attacks = attack_maps_helper([[-1, -1], [1, -1]])
+module LegalMoveFrom
+  def legal_move_from?(moving_piece, from_coord)
+    all_possible_moves = all_possible_moves(moving_piece, from_coord)
+    all_possible_moves.any? { |move| legal_move_to?(moving_piece, from_coord, move) }
   end
 
-  def attack_maps_helper(offsets)
-    map = {}
-    board.each_key do |coord|
-      adj = offsets.map { |dx, dy| [coord[0] + dx, coord[1] + dy] }
-      adj.select! { |x, y| x.between?(1, 8) && y.between?(1, 8) }
-      map[coord] = adj
+  def all_possible_moves(moving_piece, from_coord)
+    return adj_squares[from_coord] if moving_piece.is_a?(King) || moving_piece.is_a?(Queen)
+    return possible_sliding_moves(from_coord, [[1, 1], [1, -1], [-1, -1], [-1, 1]]) if moving_piece.is_a?(Bishop)
+    return possible_sliding_moves(from_coord, [[0, 1], [0, -1], [1, 0], [-1, 0]]) if moving_piece.is_a?(Rook)
+    return knight_attacks[from_coord] if moving_piece.is_a?(Knight)
+
+    possible_pawn_moves(from_coord, moving_piece.player) if moving_piece.is_a?(Pawn)
+  end
+
+  def possible_sliding_moves(from_coord, offset)
+    offset.map! do |x, y|
+      [from_coord[0] + x, from_coord[1] + y]
     end
-    map
+    offset.select { |x, y| x.between?(1, 8) && y.between?(1, 8) }
+  end
+
+  def possible_pawn_moves(from_coord, colour)
+    if colour == :white
+      moves = [[from_coord[0], from_coord[1] + 1]]
+      moves.concat(white_pawn_attacks[from_coord])
+    elsif colour == :black
+      moves = [[from_coord[0], from_coord[1] - 1]]
+      moves.concat(black_pawn_attacks[from_coord])
+    end
+    moves
   end
 end
-
 board = Board.new
-board.extend(LegalMove)
+board.extend(LegalMoveTo)
+board.extend(LegalMoveFrom)
 board.extend(GenAttackMaps)
 board.extend(SlidingMoves)
-board.board[[6, 1]] = nil
-board.board[[7, 1]] = nil
 board.render_board
 board.init_attack_maps
-board.promotion(:white, [5, 6], [5, 7])
+p board.legal_move_from?(board.board[[2, 1]], [2, 1])
+p board.legal_move_from?(board.board[[1, 1]], [1, 1])
+p board.legal_move_from?(board.board[[1, 2]], [1, 2])
 board.render_board

@@ -1,0 +1,179 @@
+require_relative '../board'
+require_relative '../pieces'
+
+module PawnMoves
+  def legal_pawn_move?(colour, from_coord, to_coord)
+    move = to_coord.zip(from_coord).map { |a, b| a - b }
+    offset = move.map { |i| i <=> 0 }
+    return false if colour == :white && offset[1].negative?
+    return false if colour == :black && !offset[1].negative?
+
+    return false unless legal_pawn_steps?(colour, from_coord, offset) == true
+
+    return true if legal_pawn_attack?(colour, from_coord, to_coord) == true
+    return true if legal_en_passant?(colour, from_coord, to_coord) == true
+
+    return false if offset[0].abs != 0
+
+    true
+  end
+
+  def legal_pawn_attack?(colour, from_coord, to_coord)
+    if colour == :white && white_pawn_attacks[from_coord].include?(to_coord)
+      true if !board[to_coord].nil? && board[to_coord].player == :black
+    elsif colour == :black && black_pawn_attacks[from_coord].include?(to_coord)
+      true if !board[to_coord].nil? && board[to_coord].player == :white
+    end
+  end
+
+  def legal_pawn_steps?(colour, from_coord, offset)
+    return true if offset[1].abs == 1
+
+    return false unless offset[1].abs == 2
+
+    if colour == :white && from_coord[1] == 2
+      board[from_coord].en_passant_capture = true
+      return true
+    elsif colour == :black && from_coord[1] == 7
+      board[from_coord].en_passant_capture = true
+      return true
+    end
+
+    false
+  end
+
+  def legal_en_passant?(colour, from_coord, to_coord)
+    if colour == :white
+      return false unless from_coord[1] == 5
+      return false unless white_pawn_attacks[from_coord].include?(to_coord)
+    elsif colour == :black
+      return false unless from_coord[1] == 4
+      return false unless black_pawn_attacks[from_coord].include?(to_coord)
+    end
+
+    adj_pawn = adj_pawn?(colour, from_coord)
+    return false unless adj_pawn.en_passant_capture
+
+    true
+  end
+
+  def adj_pawn?(colour, from_coord)
+    [1, -1].any? do |x|
+      adj_coord = from_coord
+      adj_coord[0] += x
+      adj_piece = board[adj_coord]
+      return adj_piece if adj_piece.is_a?(Pawn) && adj_piece.player != colour
+    end
+  end
+end
+
+module SlidingMoves
+  def legal_slide?(moving_piece, from_coord, to_coord)
+    return false unless moving_piece.is_a?(Rook) || moving_piece.is_a?(Queen) || moving_piece.is_a?(Bishop)
+
+    move = to_coord.zip(from_coord).map { |x, y| x - y }
+    return false unless legal_sliding_dir?(moving_piece, move)
+    return false unless check_through_coords(from_coord, to_coord, move)
+
+    true
+  end
+
+  def check_through_coords(from_coord, to_coord, move)
+    offset = move.map { |x| x <=> 0 }
+    through_coord = from_coord
+    all_through_coords = []
+    until through_coord == to_coord
+      through_coord = through_coord.zip(offset).map { |a, b| a + b }
+      return false unless board[through_coord].nil?
+
+      all_through_coords << through_coord
+    end
+    all_through_coords.pop
+    all_through_coords
+  end
+
+  def legal_sliding_dir?(moving_piece, move)
+    return true if move.any?(0) && (moving_piece.is_a?(Rook) || moving_piece.is_a?(Queen))
+    return true if on_a_diagonal?(move) && (moving_piece.is_a?(Bishop) || moving_piece.is_a?(Queen))
+
+    false
+  end
+
+  def on_a_diagonal?(move)
+    move.map(&:abs).uniq.size == 1
+  end
+end
+
+module LegalMove
+  include PawnMoves
+  def legal_move_to?(moving_piece, from_coord, to_coord)
+    colour = moving_piece.player
+    return false unless empty_or_enemy?(to_coord, colour)
+    return false if check_for_adj_king(to_coord, colour)
+    return false if move_triggers_check(from_coord, to_coord, colour)
+
+    return true if moving_piece.is_a?(Pawn) && legal_pawn_move?(colour, from_coord, to_coord)
+    return true if moving_piece.is_a?(Knight) && knight_attacks[from_coord].include?(to_coord)
+    return true if moving_piece.is_a?(King) && adj_squares[from_coord].include?(to_coord)
+    return true if legal_slide?(moving_piece, from_coord, to_coord)
+
+    false
+  end
+
+  def check_for_adj_king(to_coord, colour)
+    adj_squares[to_coord].any? { |adj_coord| board[adj_coord].is_a?(King) && board[adj_coord].player != colour }
+  end
+
+  def empty_or_enemy?(coord, colour)
+    return false if board[coord] && board[coord].player == colour
+
+    true
+  end
+
+  def move_triggers_check(from_coord, to_coord, colour)
+    stub_movement(from_coord, to_coord) { check?(colour) }
+  end
+
+  def stub_movement(from_coord, to_coord)
+    stored_capture = board[to_coord]
+    board[to_coord] = board[from_coord]
+    board[from_coord] = nil
+    result = yield
+    board[from_coord] = board[to_coord]
+    board[to_coord] = stored_capture
+    result
+  end
+
+  def castling(moving_piece, from_coord, to_coord)
+    return false unless moving_piece.is_a?(King)
+
+    true
+  end
+end
+
+module GenAttackMaps
+  def init_attack_maps
+    @adj_squares = attack_maps_helper([[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]])
+    @knight_attacks = attack_maps_helper([[2, 1], [-2, 1], [2, -1], [-2, -1], [1, 2], [-1, 2], [1, -2], [-1, -2]])
+    @white_pawn_attacks = attack_maps_helper([[-1, 1], [1, 1]])
+    @black_pawn_attacks = attack_maps_helper([[-1, -1], [1, -1]])
+  end
+
+  def attack_maps_helper(offsets)
+    map = {}
+    board.each_key do |coord|
+      adj = offsets.map { |dx, dy| [coord[0] + dx, coord[1] + dy] }
+      adj.select! { |x, y| x.between?(1, 8) && y.between?(1, 8) }
+      map[coord] = adj
+    end
+    map
+  end
+end
+
+board = Board.new
+board.extend(LegalMove)
+board.extend(GenAttackMaps)
+board.extend(SlidingMoves)
+board.render_board
+board.init_attack_maps
+p board.legal_en_passant?(:black, [5, 2], [6, 3])

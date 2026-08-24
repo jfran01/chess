@@ -65,6 +65,27 @@ module PawnMoves
       return adj_piece if adj_piece.is_a?(Pawn) && adj_piece.player != colour
     end
   end
+
+  def promotion(colour, from_coord, to_coord)
+    return false unless legal_promotion?(colour, to_coord)
+
+    puts 'Pawn has reached the farthest rank!! Time for a promotion; choose Queen, Bishop, Rook, or Knight.'
+    piece_choice = assign_piece(gets.chomp.downcase)
+    board[to_coord] = piece_choice.new(colour)
+    board[from_coord] = nil
+  end
+
+  def legal_promotion?(colour, to_coord)
+    return false if colour == :white && to_coord[1] != 8
+    return false if colour == :black && to_coord[1] != 1
+
+    true
+  end
+
+  def assign_piece(piece_choice)
+    piece_types = { 'q': Queen, 'r': Rook, 'b': Bishop, 'kn': Knight }
+    piece_types[piece_choice[0].to_sym]
+  end
 end
 
 module SlidingMoves
@@ -139,6 +160,7 @@ end
 
 module LegalMove
   include PawnMoves
+  include SlidingMoves
   include Castling
   def legal_move_to?(moving_piece, from_coord, to_coord)
     colour = moving_piece.player
@@ -206,4 +228,5 @@ board.board[[6, 1]] = nil
 board.board[[7, 1]] = nil
 board.render_board
 board.init_attack_maps
-p board.legal_castling?(board.board[[5, 1]], [5, 1], [6, 1])
+board.promotion(:white, [5, 6], [5, 7])
+board.render_board

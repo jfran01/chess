@@ -104,8 +104,42 @@ module SlidingMoves
   end
 end
 
+module Castling
+  def legal_castling?(moving_piece, from_coord, to_coord)
+    return false unless moving_piece.is_a?(King) && !moving_piece.moved
+
+    move = from_coord.zip(to_coord).map { |a, b| b - a }
+    return false unless [[2, 0], [-3, 0]].include?(move)
+
+    offset = move.map { |x| x <=> 0 }
+    return false unless castle_through(move, offset, from_coord)
+
+    return false unless next_to_rook(offset, to_coord)
+
+    true
+  end
+
+  def castle_through(move, offset, from_coord)
+    through_coord = from_coord
+    move[0].abs.times do
+      through_coord[0] = through_coord[0] + offset[0]
+      return false unless board[through_coord].nil?
+    end
+  end
+
+  def next_to_rook(offset, to_coord)
+    rook_coord = to_coord
+    rook_coord[0] += offset[0]
+    adj_rook = board[rook_coord]
+    return adj_rook if adj_rook.is_a?(Rook) && !adj_rook.moved
+
+    false
+  end
+end
+
 module LegalMove
   include PawnMoves
+  include Castling
   def legal_move_to?(moving_piece, from_coord, to_coord)
     colour = moving_piece.player
     return false unless empty_or_enemy?(to_coord, colour)
@@ -143,12 +177,6 @@ module LegalMove
     board[to_coord] = stored_capture
     result
   end
-
-  def castling(moving_piece, from_coord, to_coord)
-    return false unless moving_piece.is_a?(King)
-
-    true
-  end
 end
 
 module GenAttackMaps
@@ -174,6 +202,8 @@ board = Board.new
 board.extend(LegalMove)
 board.extend(GenAttackMaps)
 board.extend(SlidingMoves)
+board.board[[6, 1]] = nil
+board.board[[7, 1]] = nil
 board.render_board
 board.init_attack_maps
-p board.legal_en_passant?(:black, [5, 2], [6, 3])
+p board.legal_castling?(board.board[[5, 1]], [5, 1], [6, 1])

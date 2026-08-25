@@ -17,9 +17,11 @@ class Pawn < Piece
             letters: { white: 'WP', black: 'BP' } }.freeze
 
   attr_reader :icon
+  attr_accessor :en_passant_capture
 
   def initialize(player, icon = :classic)
     @icon = ICONS[icon][player]
+    @en_passant_capture = false
     super
   end
 end

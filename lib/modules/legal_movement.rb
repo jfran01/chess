@@ -1,6 +1,3 @@
-require_relative '../board'
-require_relative '../pieces'
-
 module PawnMoves
   def legal_pawn_move?(colour, from_coord, to_coord)
     move = to_coord.zip(from_coord).map { |a, b| a - b }
@@ -224,6 +221,8 @@ end
 module LegalMoveFrom
   def legal_move_from?(moving_piece, from_coord)
     all_possible_moves = all_possible_moves(moving_piece, from_coord)
+    return false unless all_possible_moves
+
     all_possible_moves.any? { |move| legal_move_to?(moving_piece, from_coord, move) }
   end
 
@@ -232,8 +231,9 @@ module LegalMoveFrom
     return possible_sliding_moves(from_coord, [[1, 1], [1, -1], [-1, -1], [-1, 1]]) if moving_piece.is_a?(Bishop)
     return possible_sliding_moves(from_coord, [[0, 1], [0, -1], [1, 0], [-1, 0]]) if moving_piece.is_a?(Rook)
     return knight_attacks[from_coord] if moving_piece.is_a?(Knight)
+    return possible_pawn_moves(from_coord, moving_piece.player) if moving_piece.is_a?(Pawn)
 
-    possible_pawn_moves(from_coord, moving_piece.player) if moving_piece.is_a?(Pawn)
+    false
   end
 
   def possible_sliding_moves(from_coord, offset)
@@ -254,14 +254,3 @@ module LegalMoveFrom
     moves
   end
 end
-board = Board.new
-board.extend(LegalMoveTo)
-board.extend(LegalMoveFrom)
-board.extend(GenAttackMaps)
-board.extend(SlidingMoves)
-board.render_board
-board.init_attack_maps
-p board.legal_move_from?(board.board[[2, 1]], [2, 1])
-p board.legal_move_from?(board.board[[1, 1]], [1, 1])
-p board.legal_move_from?(board.board[[1, 2]], [1, 2])
-board.render_board

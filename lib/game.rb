@@ -146,10 +146,12 @@ class Game
     elsif @board.stalemate?(@curr_player.colour)
       puts 'STALEMATE. Well played (or commiserations) to you both.'
       return true
+    else
+      puts "#{@curr_player}, you are in check- be careful fine warrior."
     end
     false
   end
 end
 
-game = Game.new
-game.play_game
+# game = Game.new
+# game.play_game

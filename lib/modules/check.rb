@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-require_relative '../board'
-require_relative '../pieces'
-require_relative 'legal_movement'
-
 module Check
   # if player is in check, returns coordinates of checking pieces
   def check?(colour, coord = find_piece_coords(King, colour)[0])
@@ -168,15 +164,3 @@ module Stalemate
     board.reject { |piece| board[piece].nil? || board[piece].player != player_colour }
   end
 end
-
-board = Board.new
-board.extend(Checkmate)
-board.extend(GenAttackMaps)
-board.init_attack_maps
-board.board[[7, 7]] = Bishop.new(:black)
-board.board[[6, 5]] = Pawn.new(:white)
-board.board[[8, 4]] = Queen.new(:white)
-board.board[[7, 6]] = Rook.new(:white)
-board.board[[5, 5]] = King.new(:white)
-board.render_board
-p board.avoid_checkmate(:white)

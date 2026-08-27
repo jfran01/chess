@@ -59,6 +59,7 @@ module PawnMoves
       adj_coord = from_coord
       adj_coord[0] += x
       adj_piece = board[adj_coord]
+      p adj_piece
       return adj_piece if adj_piece.is_a?(Pawn) && adj_piece.player != colour
     end
   end
@@ -102,12 +103,11 @@ module SlidingMoves
     all_through_coords = []
     until through_coord == to_coord
       through_coord = through_coord.zip(offset).map { |a, b| a + b }
-      return false unless board[through_coord].nil?
 
       all_through_coords << through_coord
     end
     all_through_coords.pop
-    all_through_coords
+    all_through_coords.all? { |coord| board[coord].nil? }
   end
 
   def legal_sliding_dir?(moving_piece, move)
@@ -254,3 +254,40 @@ module LegalMoveFrom
     moves
   end
 end
+
+# module Slideable
+#   def slide_straight(from, to)
+#     move = to.zip(from).map { |a, b| a - b }
+#     return false unless move.include?(0)
+
+#     through_coords = []
+#     if !move[0].zero?
+#       direction = move[0] <=> 0
+#       (move[0].abs - 1).times do |i|
+#         through_coords << [from[0] + (direction * (i + 1)), from[1]]
+#       end
+#     elsif !move[1].zero?
+#       direction = move[1] <=> 0
+#       (move[1].abs - 1).times do |i|
+#         through_coords << [from[0], from[1] + (direction * (i + 1))]
+#       end
+#     else
+#       return false
+#     end
+
+#     through_coords
+#   end
+
+#   def slide_diagonal(from, to)
+#     move = to.zip(from).map { |a, b| a - b }
+#     return false if move.include?(0) || move[0].abs != move[1].abs
+
+#     through_coords = []
+#     dx = move[0] <=> 0
+#     dy = move[1] <=> 0
+#     (move[0].abs - 1).times do |i|
+#       through_coords << [from[0] + (dx * (i + 1)), from[1] + (dy * (i + 1))]
+#     end
+#     through_coords
+#   end
+# end

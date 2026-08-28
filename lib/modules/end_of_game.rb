@@ -1,11 +1,11 @@
 module Check
   def check?(king_colour, king_coords = find_piece_coords(King, king_colour)[0])
-    checking_pieces = 0
-    checking_pieces += attack_by_pawn?(king_colour, king_coords).size
-    checking_pieces += attack_by_knight?(king_colour, king_coords).size
-    checking_pieces += attack_by_sliding_piece?(king_colour, king_coords).size
+    checking_pieces = []
+    checking_pieces.concat(attack_by_pawn?(king_colour, king_coords))
+    checking_pieces.concat(attack_by_knight?(king_colour, king_coords))
+    checking_pieces.concat(attack_by_sliding_piece?(king_colour, king_coords))
 
-    return checking_pieces unless checking_pieces.zero?
+    return checking_pieces unless checking_pieces.empty?
 
     false
   end
@@ -53,9 +53,11 @@ module Checkmate
   include Check
   def avoid_checkmate?(king_colour)
     king_coords = find_piece_coords(King, king_colour)&.first
-    num_checking_pieces = check?(king_colour, king_coords)
+    checking_pieces = check?(king_colour, king_coords)
     return true if legal_move_from?(board[king_coords], king_coords)
-    return false if num_checking_pieces > 1
+    return false if checking_pieces.size > 1
+    return true if block_check?(king_colour, king_coords)
+    return true if attack_check?(king_colour, checking_pieces)
 
     false
   end
@@ -73,5 +75,9 @@ module Checkmate
     end
 
     false
+  end
+
+  def attack_check?(king_colour, checking_pieces)
+    checking_pieces.any? { |coord| check?(enemy_colour(king_colour), coord) }
   end
 end

@@ -45,3 +45,16 @@ module Check
     :white
   end
 end
+
+module Checkmate
+  include Check
+  def avoid_checkmate(king_colour)
+    king_coords = find_piece_coords(King, king_colour)&.first
+  end
+
+  def escape_check?(king_coords)
+    adj_squares[king_coords].any? do |adj_coord|
+      legal_move_to?(board[king_coords], king_coords, adj_coord)
+    end
+  end
+end

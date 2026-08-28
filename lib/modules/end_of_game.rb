@@ -51,16 +51,27 @@ end
 
 module Checkmate
   include Check
-  def avoid_checkmate(king_colour)
+  def avoid_checkmate?(king_colour)
     king_coords = find_piece_coords(King, king_colour)&.first
-    return true if escape_check?(king_coords)
+    num_checking_pieces = check?(king_colour, king_coords)
+    return true if legal_move_from?(board[king_coords], king_coords)
+    return false if num_checking_pieces > 1
 
     false
   end
 
-  def escape_check?(king_coords)
-    adj_squares[king_coords].any? do |adj_coord|
-      legal_move_to?(board[king_coords], king_coords, adj_coord)
+  def block_check?(king_colour, king_coords)
+    sliding_attack_coords = attack_by_sliding_piece?(king_colour, king_coords)
+    return false if sliding_attack_coords.empty?
+
+    sliding_attack_coords.each do |sliding_coord|
+      return false if adj_squares[king_coords].include?(sliding_coord)
+
+      move = king_coords.zip(sliding_coord).map { |x, y| x - y }
+      through_coords = through_coords(sliding_coord, king_coords, move)
+      return true if through_coords.any? { |through| check?(enemy_colour(king_colour), through) }
     end
+
+    false
   end
 end

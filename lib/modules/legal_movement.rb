@@ -92,12 +92,12 @@ module SlidingMoves
 
     move = to_coord.zip(from_coord).map { |x, y| x - y }
     return false unless legal_sliding_dir?(moving_piece, move)
-    return false unless check_through_coords(from_coord, to_coord, move)
+    return false unless through_coords(from_coord, to_coord, move).all? { |coord| board[coord].nil? }
 
     true
   end
 
-  def check_through_coords(from_coord, to_coord, move)
+  def through_coords(from_coord, to_coord, move)
     offset = move.map { |x| x <=> 0 }
     through_coord = from_coord
     all_through_coords = []
@@ -107,7 +107,7 @@ module SlidingMoves
       all_through_coords << through_coord
     end
     all_through_coords.pop
-    all_through_coords.all? { |coord| board[coord].nil? }
+    all_through_coords
   end
 
   def legal_sliding_dir?(moving_piece, move)

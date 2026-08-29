@@ -16,6 +16,8 @@ class Player
     input = get_input
     return :save_game if input == :save_game
 
+    input = get_input if input == :skip
+
     exit! if input == :quit_game
 
     from_coord = convert_coord(input.chomp)
@@ -29,6 +31,8 @@ class Player
     puts 'Enter the square you would like to move to:'
     input = get_input
     return :save_game if input == :save_game
+
+    input = get_input if input == :skip
 
     exit! if input == :quit_game
 
@@ -62,13 +66,16 @@ class Player
 
       case char
       when "\cs"
-        puts 'Things are getting to intense huh? Take a break?'
+        puts 'Things are getting too intense huh? Take a break?'
         puts '[Y]es or [N]o:'
         return :save_game if confirm?
+
+        return :skip
       when "\cq"
         puts "You're about to quit the game and delete your progress. Are you sure that's what you want??"
         puts '[Y]es or [N]o:'
         exit! if confirm?
+        return :skip
       when "\r"
         puts
         return input

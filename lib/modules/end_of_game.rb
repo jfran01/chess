@@ -55,9 +55,17 @@ module Checkmate
     king_coords = find_piece_coords(King, king_colour)&.first
     checking_pieces = check?(king_colour, king_coords)
     return true if legal_move_from?(board[king_coords], king_coords)
+
+    p "can't move king"
     return false if checking_pieces.size > 1
+
+    p 'fewer than 2 checking pieces'
     return true if block_check?(king_colour, king_coords)
+
+    p "can't block check"
     return true if attack_check?(king_colour, checking_pieces)
+
+    p "can't attack check"
 
     false
   end
@@ -71,13 +79,40 @@ module Checkmate
 
       move = king_coords.zip(sliding_coord).map { |x, y| x - y }
       through_coords = through_coords(sliding_coord, king_coords, move)
-      return true if through_coords.any? { |through| check?(enemy_colour(king_colour), through) }
+      return true if through_coords.any? do |through|
+        !attack_by_knight?(enemy_colour(king_colour),
+                           through).empty? ||
+        !attack_by_sliding_piece?(enemy_colour(king_colour),
+                                  through).empty? ||
+        block_by_pawn?(enemy_colour(king_colour), through)
+      end
     end
 
     false
   end
 
+  def block_by_pawn?(colour, coord)
+    offset = if colour == :white
+               1
+             else
+               -1
+             end
+    pawn_coord = [coord[0], coord[1] + offset]
+    board[pawn_coord].is_a?(Pawn) && board[pawn_coord].player != colour
+  end
+
   def attack_check?(king_colour, checking_pieces)
     checking_pieces.any? { |coord| check?(enemy_colour(king_colour), coord) }
+  end
+end
+
+module Stalemate
+  def avoid_stalemate?(king_colour)
+    player_pieces = find_player_pieces(king_colour)
+    player_pieces.any? { |coord, piece| legal_move_from?(piece, coord) }
+  end
+
+  def find_player_pieces(colour)
+    board.select { |_coord, piece| piece&.player == colour }
   end
 end

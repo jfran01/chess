@@ -55,17 +55,9 @@ module Checkmate
     king_coords = find_piece_coords(King, king_colour)&.first
     checking_pieces = check?(king_colour, king_coords)
     return true if legal_move_from?(board[king_coords], king_coords)
-
-    p "can't move king"
     return false if checking_pieces.size > 1
-
-    p 'fewer than 2 checking pieces'
     return true if block_check?(king_colour, king_coords)
-
-    p "can't block check"
     return true if attack_check?(king_colour, checking_pieces)
-
-    p "can't attack check"
 
     false
   end

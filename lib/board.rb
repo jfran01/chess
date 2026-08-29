@@ -2,30 +2,27 @@
 
 require_relative 'pieces'
 require_relative 'player'
-require_relative 'modules/movement'
-require_relative 'modules/check'
-require_relative 'modules/can_piece_move'
+require_relative 'modules/legal_movement'
+require_relative 'modules/next_move'
+require_relative 'modules/end_of_game'
 
 class Board
-  include CheckMoves
-  include AttackMaps
   include Check
+  include Checkmate
   include Stalemate
-  include PieceMoveability
-  include MakeMove
-  include SpecialMoves
+  include LegalMoveTo
+  include LegalMoveFrom
+  include GenAttackMaps
+  include NextMove
   SQUARE_SIZE = 5
 
-  attr_reader :board, :captured_pieces, :knight_attacks, :king_attacks, :white_pawn_attacks, :black_pawn_attacks
-  attr_accessor :checking_pieces
+  attr_reader :board, :adj_squares, :knight_attacks, :king_attacks, :white_pawn_attacks, :black_pawn_attacks
+  attr_accessor :checking_pieces, :captured_pieces
 
   def initialize
     @board = init_board
     pop_board(:classic)
-    @knight_attacks = init_attack_maps([[2, 1], [-2, 1], [2, -1], [-2, -1], [1, 2], [-1, 2], [1, -2], [-1, -2]])
-    @king_attacks = init_attack_maps([[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]])
-    @white_pawn_attacks = init_attack_maps([[-1, 1], [1, 1]])
-    @black_pawn_attacks = init_attack_maps([[-1, -1], [1, -1]])
+    init_attack_maps
     @captured_pieces = []
   end
 

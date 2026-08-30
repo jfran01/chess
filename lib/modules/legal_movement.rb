@@ -5,9 +5,10 @@ module PawnMoves
     return false if colour == :white && offset[1].negative?
     return false if colour == :black && !offset[1].negative?
 
-    return false unless legal_pawn_steps?(colour, from_coord, offset) == true
+    return false unless legal_pawn_steps?(colour, from_coord, move) == true
 
     return true if legal_pawn_attack?(colour, from_coord, to_coord) == true
+    return false unless board[to_coord].nil?
     return true if legal_en_passant?(colour, from_coord, to_coord) == true
 
     return false if offset[0].abs != 0
@@ -17,16 +18,17 @@ module PawnMoves
 
   def legal_pawn_attack?(colour, from_coord, to_coord)
     if colour == :white && white_pawn_attacks[from_coord].include?(to_coord)
-      true if !board[to_coord].nil? && board[to_coord].player == :black
+      return true if !board[to_coord].nil? && board[to_coord].player == :black
     elsif colour == :black && black_pawn_attacks[from_coord].include?(to_coord)
-      true if !board[to_coord].nil? && board[to_coord].player == :white
+      return true if !board[to_coord].nil? && board[to_coord].player == :white
     end
+    false
   end
 
-  def legal_pawn_steps?(colour, from_coord, offset)
-    return true if offset[1].abs == 1
+  def legal_pawn_steps?(colour, from_coord, move)
+    return true if move[1].abs == 1
 
-    return false unless offset[1].abs == 2
+    return false unless move[1].abs == 2 && move[0].zero?
 
     if colour == :white && from_coord[1] == 2
       board[from_coord].en_passant_capture = true
@@ -49,7 +51,7 @@ module PawnMoves
     end
 
     adj_pawn = adj_pawn?(colour, from_coord)
-    return false unless adj_pawn.en_passant_capture
+    return false unless adj_pawn&.en_passant_capture
 
     true
   end
@@ -65,7 +67,7 @@ module PawnMoves
   end
 
   def promotion(colour, from_coord, to_coord)
-    return false unless legal_promotion?(colour, to_coord)
+    return unless legal_promotion?(colour, to_coord)
 
     puts 'Pawn has reached the farthest rank!! Time for a promotion; choose Queen, Bishop, Rook, or Knight.'
     piece_choice = assign_piece(gets.chomp.downcase)
@@ -138,7 +140,7 @@ module Castling
   end
 
   def castle_through(move, offset, from_coord)
-    through_coord = from_coord
+    through_coord = from_coord.dup
     move[0].abs.times do
       through_coord[0] = through_coord[0] + offset[0]
       return false unless board[through_coord].nil?
@@ -146,7 +148,7 @@ module Castling
   end
 
   def next_to_rook(offset, to_coord)
-    rook_coord = to_coord
+    rook_coord = to_coord.dup
     rook_coord[0] += offset[0]
     adj_rook = board[rook_coord]
     return adj_rook if adj_rook.is_a?(Rook) && !adj_rook.moved
@@ -189,6 +191,7 @@ module LegalMoveTo
     return true if moving_piece.is_a?(Knight) && knight_attacks[from_coord].include?(to_coord)
     return true if moving_piece.is_a?(King) && adj_squares[from_coord].include?(to_coord)
     return true if legal_slide?(moving_piece, from_coord, to_coord)
+    return true if legal_castling?(moving_piece, from_coord, to_coord)
 
     false
   end

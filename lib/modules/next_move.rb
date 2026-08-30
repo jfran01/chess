@@ -1,6 +1,3 @@
-require_relative '../board'
-require_relative '../player'
-
 module NextMove
   def make_move(curr_player)
     moving_piece, from_coord = choose_move_from(curr_player)
@@ -9,13 +6,15 @@ module NextMove
     to_coord = choose_move_to(curr_player, moving_piece, from_coord)
     return :save_game if to_coord == :save_game
 
-    puts "Moving #{piece.class.to_s.downcase} from #{convert_coord_to_notation(from_coord)} to #{convert_coord_to_notation(to_coord)}"
-    move_piece_position(from_coord, to_coord)
+    puts "Moving #{moving_piece.class.to_s.downcase} from #{convert_coord_to_notation(from_coord)} to #{convert_coord_to_notation(to_coord)}"
+    move_piece_position(moving_piece, from_coord, to_coord)
+    promotion(curr_player.colour, from_coord, to_coord) if moving_piece.is_a?(Pawn)
     toggle_move_status(moving_piece)
     toggle_en_passant_capture(curr_player.colour)
   end
 
-  def move_piece_position(from_coord, to_coord)
+  def move_piece_position(moving_piece, from_coord, to_coord)
+    move_adj_rook(to_coord) if legal_castling?(moving_piece, from_coord, to_coord)
     captured_piece = board[to_coord]
     board[to_coord] = board[from_coord]
     board[from_coord] = nil
@@ -23,6 +22,18 @@ module NextMove
 
     puts "Congratulations! (and commiserations...) A #{captured_piece.player} #{captured_piece.class.to_s.downcase} has been captured."
     @captured_pieces << captured_piece
+  end
+
+  def move_adj_rook(to_coord)
+    if to_coord[0] == 7
+      rook_from_coord = [8, to_coord[1]]
+      rook_to_coord = [6, to_coord[1]]
+    elsif to_coord[0] == 2
+      rook_from_coord = [1, to_coord[1]]
+      rook_to_coord = [3, to_coord[1]]
+    end
+    board[rook_to_coord] = board[rook_from_coord]
+    board[rook_from_coord] = nil
   end
 
   def choose_move_from(curr_player)
@@ -67,10 +78,3 @@ module NextMove
     enemy_pawns.each { |pawn| pawn.en_passant_capture = false }
   end
 end
-
-board = Board.new
-player1 = Player.new(1, :white)
-board.extend(NextMove)
-board.render_board
-p board.toggle_en_passant_capture(:white)
-board.render_board

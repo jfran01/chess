@@ -58,10 +58,9 @@ module PawnMoves
 
   def adj_pawn?(colour, from_coord)
     [1, -1].any? do |x|
-      adj_coord = from_coord
+      adj_coord = from_coord.dup
       adj_coord[0] += x
       adj_piece = board[adj_coord]
-      p adj_piece
       return adj_piece if adj_piece.is_a?(Pawn) && adj_piece.player != colour
     end
   end

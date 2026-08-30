@@ -16,6 +16,8 @@ module NextMove
   def move_piece_position(moving_piece, from_coord, to_coord)
     move_adj_rook(to_coord) if legal_castling?(moving_piece, from_coord, to_coord)
     captured_piece = board[to_coord]
+    captured_piece = capture_en_passant_pawn(from_coord, to_coord) if moving_piece.is_a?(Pawn) && legal_en_passant?(moving_piece.player, from_coord,
+                                                                                                                    to_coord)
     board[to_coord] = board[from_coord]
     board[from_coord] = nil
     return if captured_piece.nil?
@@ -34,6 +36,13 @@ module NextMove
     end
     board[rook_to_coord] = board[rook_from_coord]
     board[rook_from_coord] = nil
+  end
+
+  def capture_en_passant_pawn(from_coord, to_coord)
+    adj_pawn_coord = [to_coord[0], from_coord[1]]
+    captured_pawn = board[adj_pawn_coord]
+    board[adj_pawn_coord] = nil
+    captured_pawn
   end
 
   def choose_move_from(curr_player)

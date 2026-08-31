@@ -35,7 +35,7 @@ class Game
 
   def play_round
     puts "\n\e[4m#{@curr_player.id}'s turn\e[0m"
-    move = @board.move_piece(@curr_player)
+    move = @board.make_move(@curr_player)
     save_game if move == :save_game
     print_result
     @curr_player = @players.reverse![0]
@@ -140,18 +140,18 @@ class Game
     @board.checking_pieces = @board.check?(@curr_player.colour)
     return false unless @board.checking_pieces
 
-    if @board.checkmate?(@curr_player.colour)
-      puts "CHECKMATE! #{@players[1]} is victorious and may now decide #{@curr_player}'s fate."
+    if !@board.avoid_checkmate?(@curr_player.colour)
+      puts "CHECKMATE! #{@players[1].id} is victorious and may now decide #{@curr_player.id}'s fate."
       return true
-    elsif @board.stalemate?(@curr_player.colour)
+    elsif !@board.avoid_stalemate?(@curr_player.colour)
       puts 'STALEMATE. Well played (or commiserations) to you both.'
       return true
     else
-      puts "#{@curr_player}, you are in check- be careful fine warrior."
+      puts "#{@curr_player.id}, you are in check- be careful fine warrior."
     end
     false
   end
 end
 
-# game = Game.new
-# game.play_game
+game = Game.new
+game.play_game

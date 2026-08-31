@@ -4,7 +4,6 @@ require_relative 'player'
 require_relative 'board'
 require_relative 'pieces'
 require_relative 'modules/save_game'
-require 'pry-byebug'
 
 class Game
   include SaveGame
@@ -66,6 +65,7 @@ class Game
   private
 
   def introduce
+    puts TITLE
     puts "Welcome to chess: the classic game of strategy, prediction, and emotional overinvestment.\n"
     puts 'Would you like to continue a game, or start afresh?'
     puts '[C]ontinue or Start [N]ew:'
@@ -84,9 +84,21 @@ class Game
     end
   end
 
+  TITLE = <<~CHESS
+    #{'                                                  '}
+     ▄▄▄▄▄▄▄ ▄▄▄   ▄▄▄  ▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄#{' '}
+    ███▀▀▀▀▀ ███   ███ ███▀▀▀▀▀ █████▀▀▀ █████▀▀▀#{' '}
+    ███      █████████ ███▄▄     ▀████▄   ▀████▄#{'  '}
+    ███      ███▀▀▀███ ███         ▀████    ▀████#{' '}
+    ▀███████ ███   ███ ▀███████ ███████▀ ███████▀#{' '}
+    #{'                                              '}
+    #{'                                              '}
+  CHESS
+
+  RULE_DIVIDER = "\u2582" * 100
   RULES = <<~RULES
 
-    #{DIVIDER}
+    #{RULE_DIVIDER}
 
     #{BOLD}#{UNDERLINE}King:#{RESET}
     The most important piece, must be protected or you lose the game \e[3m(reeks of toxic masculinity but ok...)#{RESET}
@@ -115,7 +127,7 @@ class Game
     3: Moves diagonally when taking
     At the end of the board, they 'promote' to any other piece (excluding the king) of the same colour#{RESET}
 
-    #{DIVIDER}
+    #{RULE_DIVIDER}
 
   RULES
 

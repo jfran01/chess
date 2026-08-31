@@ -51,7 +51,7 @@ module PawnMoves
     end
 
     adj_pawn = adj_pawn?(colour, from_coord)
-    return false unless adj_pawn&.en_passant_capture
+    return false unless adj_pawn && adj_pawn.en_passant_capture
 
     true
   end
@@ -183,7 +183,7 @@ module LegalMoveTo
     colour = moving_piece.player
     return false if board[from_coord].nil?
     return false unless empty_or_enemy?(to_coord, colour)
-    return false if check_for_adj_king(to_coord, colour)
+    return false if moving_piece.is_a?(King) && check_for_adj_king(to_coord, colour)
     return false if move_triggers_check(from_coord, to_coord, colour)
 
     return true if moving_piece.is_a?(Pawn) && legal_pawn_move?(colour, from_coord, to_coord)
